@@ -277,11 +277,30 @@ familytrack/
 | POST | `/api/notify` | Notificación manual |
 | CRON | Cada 24h | Health check dispositivos |
 
-Para configurar la URL del backend, editar en `app/build.gradle.kts`:
+**URL de produccion:** `https://server.monghit.com/webhook/`
+
+Configurado en `app/build.gradle.kts`:
 
 ```kotlin
-buildConfigField("String", "BASE_URL", "\"https://tu-dominio-n8n.com/webhook/\"")
+buildConfigField("String", "BASE_URL", "\"https://server.monghit.com/webhook/\"")
 ```
+
+### Infraestructura (IONOS)
+
+- **PostgreSQL**: Container `familytrack-db` en red `traefik-net`
+- **n8n**: Container `n8n` en red `traefik-net` (alcanza `familytrack-db:5432`)
+- **Compose**: `/opt/apps/pro/familytrack/docker-compose.yml`
+- **Backups n8n**: `/opt/apps/pro/n8n-backups/backup.sh`
+
+### Workflows n8n
+
+| Workflow | Path | Funcion |
+|----------|------|---------|
+| Register Device | `POST /api/register` | Registra dispositivo con token FCM |
+| Location Update | `POST /api/location/update` | Guarda ubicacion + valida geofences |
+| Config Interval | `POST /api/config/location-interval` | Cambia intervalo de reporte |
+| Manual Notify | `POST /api/notify` | Envia notificacion entre familiares |
+| Health Check | CRON 24h | Detecta dispositivos offline |
 
 ---
 

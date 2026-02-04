@@ -6,45 +6,21 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-familytrack}
       POSTGRES_USER: ${POSTGRES_USER:-familytrack}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-familytrack_secret}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init:/docker-entrypoint-initdb.d
+    networks:
+      - traefik-net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-familytrack} -d ${POSTGRES_DB:-familytrack}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  n8n:
-    image: n8nio/n8n:latest
-    container_name: familytrack-n8n
-    restart: unless-stopped
-    environment:
-      - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
-      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-admin}
-      - DB_TYPE=postgresdb
-      - DB_POSTGRESDB_HOST=postgres
-      - DB_POSTGRESDB_PORT=5432
-      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB:-familytrack}
-      - DB_POSTGRESDB_USER=${POSTGRES_USER:-familytrack}
-      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD:-familytrack_secret}
-      - N8N_HOST=${N8N_HOST:-localhost}
-      - N8N_PORT=5678
-      - N8N_PROTOCOL=${N8N_PROTOCOL:-http}
-      - WEBHOOK_URL=${WEBHOOK_URL:-http://localhost:5678}
-      - GENERIC_TIMEZONE=Europe/Madrid
-    ports:
-      - "${N8N_PORT:-5678}:5678"
-    volumes:
-      - n8n_data:/home/node/.n8n
-    depends_on:
-      postgres:
-        condition: service_healthy
-
 volumes:
   postgres_data:
-  n8n_data:
+
+networks:
+  traefik-net:
+    external: true
