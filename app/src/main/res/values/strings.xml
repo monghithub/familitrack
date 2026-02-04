@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FamilyTrack</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Inicio</string>
+    <string name="nav_map">Mapa</string>
+    <string name="nav_family">Familia</string>
+    <string name="nav_settings">Ajustes</string>
+
+    <!-- Home Screen -->
+    <string name="home_title">Mi Ubicación</string>
+    <string name="home_status_active">Activo</string>
+    <string name="home_status_inactive">Inactivo</string>
+    <string name="home_sharing_location">Compartiendo ubicación</string>
+    <string name="home_not_sharing">Ubicación pausada</string>
+    <string name="home_last_update">Última actualización: %1$s</string>
+    <string name="home_interval">Intervalo: %1$d min</string>
+
+    <!-- Map Screen -->
+    <string name="map_title">Mapa Familiar</string>
+    <string name="map_loading">Cargando ubicaciones…</string>
+    <string name="map_no_locations">Sin ubicaciones disponibles</string>
+
+    <!-- Family Screen -->
+    <string name="family_title">Mi Familia</string>
+    <string name="family_member_online">En línea</string>
+    <string name="family_member_offline">Sin conexión</string>
+    <string name="family_member_last_seen">Visto: %1$s</string>
+    <string name="family_add_member">Añadir miembro</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_location">Ubicación</string>
+    <string name="settings_location_enabled">Compartir ubicación</string>
+    <string name="settings_location_interval">Intervalo de actualización</string>
+    <string name="settings_notifications">Notificaciones</string>
+    <string name="settings_notifications_enabled">Recibir alertas</string>
+    <string name="settings_notifications_sound">Sonido</string>
+    <string name="settings_notifications_vibrate">Vibración</string>
+    <string name="settings_account">Cuenta</string>
+    <string name="settings_device_name">Nombre del dispositivo</string>
+    <string name="settings_user_name">Tu nombre</string>
+    <string name="settings_logout">Cerrar sesión</string>
+    <string name="settings_about">Acerca de</string>
+    <string name="settings_version">Versión %1$s</string>
+
+    <!-- Safe Zones -->
+    <string name="safe_zones_title">Zonas Seguras</string>
+    <string name="safe_zone_add">Añadir zona</string>
+    <string name="safe_zone_name">Nombre de la zona</string>
+    <string name="safe_zone_radius">Radio (metros)</string>
+    <string name="safe_zone_delete">Eliminar zona</string>
+
+    <!-- Alerts -->
+    <string name="alert_zone_exit_title">Salida de zona segura</string>
+    <string name="alert_zone_exit_body">%1$s ha salido de %2$s</string>
+    <string name="alert_zone_entry_title">Entrada a zona segura</string>
+    <string name="alert_zone_entry_body">%1$s ha llegado a %2$s</string>
+    <string name="alert_offline_title">Dispositivo sin conexión</string>
+    <string name="alert_offline_body">%1$s no ha reportado ubicación en las últimas 24 horas</string>
+
+    <!-- Permissions -->
+    <string name="permission_location_title">Permiso de ubicación</string>
+    <string name="permission_location_rationale">FamilyTrack necesita acceso a tu ubicación para compartirla con tu familia.</string>
+    <string name="permission_location_background_title">Ubicación en segundo plano</string>
+    <string name="permission_location_background_rationale">Para compartir tu ubicación incluso cuando la app está cerrada, necesitamos permiso de ubicación en segundo plano.</string>
+    <string name="permission_notification_title">Permiso de notificaciones</string>
+    <string name="permission_notification_rationale">Necesitamos permiso para enviarte alertas importantes sobre tu familia.</string>
+    <string name="permission_grant">Conceder</string>
+    <string name="permission_deny">Denegar</string>
+    <string name="permission_settings">Ir a Ajustes</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_alerts">Alertas familiares</string>
+    <string name="notification_channel_alerts_desc">Notificaciones sobre la ubicación de tu familia</string>
+    <string name="notification_channel_service">Servicio de ubicación</string>
+    <string name="notification_channel_service_desc">Notificación del servicio en segundo plano</string>
+    <string name="notification_service_title">FamilyTrack activo</string>
+    <string name="notification_service_text">Compartiendo tu ubicación con la familia</string>
+
+    <!-- Errors -->
+    <string name="error_generic">Ha ocurrido un error</string>
+    <string name="error_network">Error de conexión</string>
+    <string name="error_location">No se pudo obtener la ubicación</string>
+    <string name="error_registration">Error al registrar dispositivo</string>
+
+    <!-- Actions -->
+    <string name="action_retry">Reintentar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_confirm">Confirmar</string>
+
+    <!-- Time -->
+    <string name="time_just_now">Justo ahora</string>
+    <string name="time_minutes_ago">Hace %1$d min</string>
+    <string name="time_hours_ago">Hace %1$d h</string>
+    <string name="time_days_ago">Hace %1$d días</string>
+</resources>
