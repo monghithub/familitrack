@@ -1,0 +1,123 @@
+[{
+  "name": "FamilyTrack - Send Push",
+  "active": false,
+  "isArchived": false,
+  "versionId": "a0a0a0a0-push-0000-0000-000000000002",
+  "pinData": {},
+  "meta": {},
+  "staticData": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "api/send-push",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f1f1f1f1-0006-0006-0006-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "webhookId": "familytrack-push"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst fs = require('fs');\n\nconst sa = JSON.parse(fs.readFileSync('/files/firebase-sa.json', 'utf8'));\nconst now = Math.floor(Date.now() / 1000);\n\nconst header = Buffer.from(JSON.stringify({alg: 'RS256', typ: 'JWT'})).toString('base64url');\nconst payload = Buffer.from(JSON.stringify({\n  iss: sa.client_email,\n  scope: 'https://www.googleapis.com/auth/firebase.messaging',\n  aud: sa.token_uri,\n  exp: now + 3600,\n  iat: now\n})).toString('base64url');\n\nconst sign = crypto.createSign('RSA-SHA256');\nsign.update(header + '.' + payload);\nconst signature = sign.sign(sa.private_key, 'base64url');\nconst jwt = header + '.' + payload + '.' + signature;\n\nreturn [{ json: { jwt_assertion: jwt, token_uri: sa.token_uri, project_id: sa.project_id } }];"
+      },
+      "id": "f1f1f1f1-0006-0006-0006-000000000002",
+      "name": "Generate JWT",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.token_uri }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "urn:ietf:params:oauth:grant-type:jwt-bearer"
+            },
+            {
+              "name": "assertion",
+              "value": "={{ $json.jwt_assertion }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f1f1f1f1-0006-0006-0006-000000000005",
+      "name": "Get Access Token",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://fcm.googleapis.com/v1/projects/{{ $node['Generate JWT'].json.project_id }}/messages:send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"message\": {\n    \"token\": \"{{ $node['Webhook'].json.body.deviceToken }}\",\n    \"notification\": {\n      \"title\": \"{{ $node['Webhook'].json.body.title }}\",\n      \"body\": \"{{ $node['Webhook'].json.body.message }}\"\n    },\n    \"data\": {\n      \"alertType\": \"{{ $node['Webhook'].json.body.alertType || 'manual' }}\",\n      \"fromUserId\": \"{{ String($node['Webhook'].json.body.fromUserId || '') }}\"\n    },\n    \"android\": {\n      \"priority\": \"HIGH\",\n      \"notification\": {\n        \"channel_id\": \"family_alerts\",\n        \"sound\": \"default\"\n      }\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "f1f1f1f1-0006-0006-0006-000000000003",
+      "name": "Send FCM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [880, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'ok', fcm_response: $json }) }}"
+      },
+      "id": "f1f1f1f1-0006-0006-0006-000000000004",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1100, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{"node": "Generate JWT", "type": "main", "index": 0}]]
+    },
+    "Generate JWT": {
+      "main": [[{"node": "Get Access Token", "type": "main", "index": 0}]]
+    },
+    "Get Access Token": {
+      "main": [[{"node": "Send FCM", "type": "main", "index": 0}]]
+    },
+    "Send FCM": {
+      "main": [[{"node": "Response", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}]
