@@ -31,6 +31,7 @@ class LocationRepository @Inject constructor(
             val response = apiService.registerDevice(request)
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
+                settingsRepository.setDeviceId(body.deviceId)
                 settingsRepository.setRegistered(true)
                 settingsRepository.setLocationInterval(body.locationInterval)
                 Result.success(body.deviceId)
