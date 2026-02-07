@@ -42,6 +42,13 @@ data class ConfigUpdateResponse(
     @SerializedName("newInterval") val newInterval: Int
 )
 
+// Manual Notification
+data class ManualNotifyRequest(
+    @SerializedName("fromUserId") val fromUserId: Int,
+    @SerializedName("toUserId") val toUserId: Int,
+    @SerializedName("type") val type: String = "manual"
+)
+
 // Notification
 data class NotificationData(
     @SerializedName("alertType") val alertType: String,

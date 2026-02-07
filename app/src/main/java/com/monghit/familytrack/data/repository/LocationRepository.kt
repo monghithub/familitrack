@@ -2,6 +2,7 @@ package com.monghit.familytrack.data.repository
 
 import com.monghit.familytrack.data.remote.ApiService
 import com.monghit.familytrack.data.remote.dto.LocationUpdateRequest
+import com.monghit.familytrack.data.remote.dto.ManualNotifyRequest
 import com.monghit.familytrack.data.remote.dto.RegisterDeviceRequest
 import com.monghit.familytrack.domain.model.Device
 import com.monghit.familytrack.domain.model.FamilyMember
@@ -137,6 +138,24 @@ class LocationRepository @Inject constructor(
         } catch (e: Exception) {
             Timber.e(e, "Error getting family locations")
             emit(FamilyData())
+        }
+    }
+
+    suspend fun sendManualNotification(fromUserId: Int, toUserId: Int): Result<Boolean> {
+        return try {
+            val request = ManualNotifyRequest(
+                fromUserId = fromUserId,
+                toUserId = toUserId
+            )
+            val response = apiService.sendManualNotification(request)
+            if (response.isSuccessful) {
+                Result.success(true)
+            } else {
+                Result.failure(Exception("Failed to send notification: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error sending manual notification")
+            Result.failure(e)
         }
     }
 
