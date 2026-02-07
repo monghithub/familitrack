@@ -35,11 +35,11 @@ class FamilyViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
 
             try {
-                locationRepository.getFamilyLocations().collect { members ->
+                locationRepository.getFamilyLocations().collect { familyData ->
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            familyMembers = members
+                            familyMembers = familyData.members
                         )
                     }
                 }

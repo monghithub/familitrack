@@ -52,7 +52,16 @@ data class NotificationData(
 
 // Family Locations
 data class FamilyLocationsResponse(
-    @SerializedName("members") val members: List<FamilyMemberDto>
+    @SerializedName("members") val members: List<FamilyMemberDto>,
+    @SerializedName("safeZones") val safeZones: List<SafeZoneDto> = emptyList()
+)
+
+data class SafeZoneDto(
+    @SerializedName("zoneId") val zoneId: Int,
+    @SerializedName("name") val name: String,
+    @SerializedName("lat") val lat: Double,
+    @SerializedName("lng") val lng: Double,
+    @SerializedName("radius") val radius: Int
 )
 
 data class FamilyMemberDto(

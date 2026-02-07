@@ -1,0 +1,127 @@
+{
+  "id": "lA6F0YjeZOO8wcBf",
+  "name": "FamilyTrack - Get Family Locations",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "api/family/locations",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "g1g1g1g1-0007-0007-0007-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 300],
+      "webhookId": "familytrack-family-locations"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  u.user_id,\n  u.name,\n  u.role,\n  d.device_id,\n  d.device_name,\n  d.is_active,\n  d.last_seen,\n  l.latitude,\n  l.longitude,\n  l.accuracy,\n  l.timestamp as location_timestamp,\n  CASE \n    WHEN d.last_seen > NOW() - INTERVAL '10 minutes' THEN true \n    ELSE false \n  END as is_online\nFROM users u\nLEFT JOIN devices d ON d.user_id = u.user_id AND d.is_active = true\nLEFT JOIN LATERAL (\n  SELECT latitude, longitude, accuracy, timestamp\n  FROM locations\n  WHERE device_id = d.device_id\n  ORDER BY received_at DESC\n  LIMIT 1\n) l ON true\nORDER BY u.user_id;",
+        "options": {}
+      },
+      "id": "g1g1g1g1-0007-0007-0007-000000000002",
+      "name": "Get Family Data",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [480, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT zone_id, name, center_lat, center_lng, radius_meters FROM safe_zones WHERE is_active = true ORDER BY zone_id;",
+        "options": {}
+      },
+      "id": "g1g1g1g1-0007-0007-0007-000000000005",
+      "name": "Get Safe Zones",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [700, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const familyItems = $('Get Family Data').all();\nconst zoneItems = $input.all();\n\nconst members = familyItems.map(item => {\n  const d = item.json;\n  let lastSeenFormatted = 'Nunca';\n  if (d.last_seen) {\n    const now = new Date();\n    const lastSeen = new Date(d.last_seen);\n    const diffMs = now - lastSeen;\n    const diffMins = Math.floor(diffMs / 60000);\n    const diffHours = Math.floor(diffMs / 3600000);\n    const diffDays = Math.floor(diffMs / 86400000);\n    \n    if (diffMins < 1) lastSeenFormatted = 'Justo ahora';\n    else if (diffMins < 60) lastSeenFormatted = 'Hace ' + diffMins + ' min';\n    else if (diffHours < 24) lastSeenFormatted = 'Hace ' + diffHours + 'h';\n    else lastSeenFormatted = 'Hace ' + diffDays + ' dias';\n  }\n  \n  return {\n    userId: d.user_id,\n    name: d.name,\n    role: d.role,\n    deviceId: d.device_id,\n    deviceName: d.device_name,\n    isOnline: d.is_online || false,\n    lastSeenFormatted: lastSeenFormatted,\n    location: d.latitude ? {\n      latitude: parseFloat(d.latitude),\n      longitude: parseFloat(d.longitude),\n      accuracy: d.accuracy,\n      timestamp: d.location_timestamp\n    } : null\n  };\n});\n\nconst safeZones = zoneItems.map(item => {\n  const z = item.json;\n  return {\n    zoneId: z.zone_id,\n    name: z.name,\n    lat: parseFloat(z.center_lat),\n    lng: parseFloat(z.center_lng),\n    radius: z.radius_meters\n  };\n});\n\nreturn [{ json: { members: members, safeZones: safeZones } }];"
+      },
+      "id": "g1g1g1g1-0007-0007-0007-000000000003",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [920, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}"
+      },
+      "id": "g1g1g1g1-0007-0007-0007-000000000004",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1140, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Family Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Family Data": {
+      "main": [
+        [
+          {
+            "node": "Get Safe Zones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Safe Zones": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

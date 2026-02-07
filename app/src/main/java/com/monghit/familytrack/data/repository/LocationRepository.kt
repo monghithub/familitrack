@@ -6,6 +6,7 @@ import com.monghit.familytrack.data.remote.dto.RegisterDeviceRequest
 import com.monghit.familytrack.domain.model.Device
 import com.monghit.familytrack.domain.model.FamilyMember
 import com.monghit.familytrack.domain.model.Location
+import com.monghit.familytrack.domain.model.SafeZone
 import com.monghit.familytrack.domain.model.User
 import com.monghit.familytrack.domain.model.UserRole
 import kotlinx.coroutines.flow.Flow
@@ -71,11 +72,17 @@ class LocationRepository @Inject constructor(
         }
     }
 
-    fun getFamilyLocations(): Flow<List<FamilyMember>> = flow {
+    data class FamilyData(
+        val members: List<FamilyMember> = emptyList(),
+        val safeZones: List<SafeZone> = emptyList()
+    )
+
+    fun getFamilyLocations(): Flow<FamilyData> = flow {
         try {
             val response = apiService.getFamilyLocations()
             if (response.isSuccessful && response.body() != null) {
-                val members = response.body()!!.members.map { dto ->
+                val body = response.body()!!
+                val members = body.members.map { dto ->
                     val role = when (dto.role.lowercase()) {
                         "admin" -> UserRole.ADMIN
                         "monitor" -> UserRole.MONITOR
@@ -111,14 +118,25 @@ class LocationRepository @Inject constructor(
                         isOnline = dto.isOnline
                     )
                 }
-                emit(members)
+                val safeZones = body.safeZones.map { dto ->
+                    SafeZone(
+                        id = dto.zoneId,
+                        name = dto.name,
+                        centerLat = dto.lat,
+                        centerLng = dto.lng,
+                        radiusMeters = dto.radius,
+                        monitoredUserId = 0,
+                        createdBy = 0
+                    )
+                }
+                emit(FamilyData(members, safeZones))
             } else {
                 Timber.e("Failed to get family locations: ${response.message()}")
-                emit(emptyList())
+                emit(FamilyData())
             }
         } catch (e: Exception) {
             Timber.e(e, "Error getting family locations")
-            emit(emptyList())
+            emit(FamilyData())
         }
     }
 
