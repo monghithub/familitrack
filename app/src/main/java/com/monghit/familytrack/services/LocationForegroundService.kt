@@ -56,8 +56,16 @@ class LocationForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Timber.d("LocationForegroundService started")
+        when (intent?.action) {
+            ACTION_UPDATE_INTERVAL -> {
+                val newSeconds = intent.getIntExtra(EXTRA_INTERVAL_SECONDS, 300)
+                Timber.d("Updating location interval to ${newSeconds}s")
+                updateInterval(newSeconds)
+                return START_STICKY
+            }
+        }
 
+        Timber.d("LocationForegroundService started")
         startForegroundNotification()
         startLocationUpdates()
 
@@ -94,10 +102,6 @@ class LocationForegroundService : Service() {
     }
 
     private fun startLocationUpdates() {
-        serviceScope.launch {
-            currentInterval = settingsRepository.locationInterval.first() * 1000L
-        }
-
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -108,31 +112,36 @@ class LocationForegroundService : Service() {
             return
         }
 
-        val locationRequest = LocationRequest.Builder(currentInterval)
-            .setMinUpdateIntervalMillis(currentInterval / 2)
-            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-            .build()
+        serviceScope.launch {
+            currentInterval = settingsRepository.locationInterval.first() * 1000L
+            Timber.d("Location interval: ${currentInterval / 1000}s")
 
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(result: LocationResult) {
-                result.lastLocation?.let { location ->
-                    Timber.d("Location received: ${location.latitude}, ${location.longitude}")
-                    sendLocationToServer(location)
+            val locationRequest = LocationRequest.Builder(currentInterval)
+                .setMinUpdateIntervalMillis(currentInterval / 2)
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .build()
+
+            locationCallback = object : LocationCallback() {
+                override fun onLocationResult(result: LocationResult) {
+                    result.lastLocation?.let { location ->
+                        Timber.d("Location received: ${location.latitude}, ${location.longitude}")
+                        sendLocationToServer(location)
+                    }
                 }
             }
-        }
 
-        fusedLocationClient.requestLocationUpdates(
-            locationRequest,
-            locationCallback!!,
-            Looper.getMainLooper()
-        )
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback!!,
+                Looper.getMainLooper()
+            )
+        }
     }
 
     private fun sendLocationToServer(androidLocation: android.location.Location) {
         serviceScope.launch {
             val userId = settingsRepository.userId.first()
-            val deviceId = 0 // Will be set by server
+            val deviceId = settingsRepository.deviceId.first()
 
             val location = Location(
                 deviceId = deviceId,
@@ -177,6 +186,8 @@ class LocationForegroundService : Service() {
 
     companion object {
         private const val NOTIFICATION_ID = 1001
+        private const val ACTION_UPDATE_INTERVAL = "com.monghit.familytrack.UPDATE_INTERVAL"
+        private const val EXTRA_INTERVAL_SECONDS = "interval_seconds"
 
         fun start(context: android.content.Context) {
             val intent = Intent(context, LocationForegroundService::class.java)
@@ -190,6 +201,14 @@ class LocationForegroundService : Service() {
         fun stop(context: android.content.Context) {
             val intent = Intent(context, LocationForegroundService::class.java)
             context.stopService(intent)
+        }
+
+        fun updateInterval(context: android.content.Context, intervalSeconds: Int) {
+            val intent = Intent(context, LocationForegroundService::class.java).apply {
+                action = ACTION_UPDATE_INTERVAL
+                putExtra(EXTRA_INTERVAL_SECONDS, intervalSeconds)
+            }
+            context.startService(intent)
         }
     }
 }

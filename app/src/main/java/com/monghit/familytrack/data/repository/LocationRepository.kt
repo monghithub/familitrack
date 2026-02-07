@@ -1,11 +1,15 @@
 package com.monghit.familytrack.data.repository
 
 import com.monghit.familytrack.data.remote.ApiService
+import com.monghit.familytrack.data.remote.dto.CreateSafeZoneRequest
+import com.monghit.familytrack.data.remote.dto.DeleteSafeZoneRequest
 import com.monghit.familytrack.data.remote.dto.LocationUpdateRequest
+import com.monghit.familytrack.data.remote.dto.ManualNotifyRequest
 import com.monghit.familytrack.data.remote.dto.RegisterDeviceRequest
 import com.monghit.familytrack.domain.model.Device
 import com.monghit.familytrack.domain.model.FamilyMember
 import com.monghit.familytrack.domain.model.Location
+import com.monghit.familytrack.domain.model.SafeZone
 import com.monghit.familytrack.domain.model.User
 import com.monghit.familytrack.domain.model.UserRole
 import kotlinx.coroutines.flow.Flow
@@ -31,6 +35,7 @@ class LocationRepository @Inject constructor(
             val response = apiService.registerDevice(request)
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
+                settingsRepository.setDeviceId(body.deviceId)
                 settingsRepository.setRegistered(true)
                 settingsRepository.setLocationInterval(body.locationInterval)
                 Result.success(body.deviceId)
@@ -70,11 +75,17 @@ class LocationRepository @Inject constructor(
         }
     }
 
-    fun getFamilyLocations(): Flow<List<FamilyMember>> = flow {
+    data class FamilyData(
+        val members: List<FamilyMember> = emptyList(),
+        val safeZones: List<SafeZone> = emptyList()
+    )
+
+    fun getFamilyLocations(): Flow<FamilyData> = flow {
         try {
             val response = apiService.getFamilyLocations()
             if (response.isSuccessful && response.body() != null) {
-                val members = response.body()!!.members.map { dto ->
+                val body = response.body()!!
+                val members = body.members.map { dto ->
                     val role = when (dto.role.lowercase()) {
                         "admin" -> UserRole.ADMIN
                         "monitor" -> UserRole.MONITOR
@@ -110,14 +121,98 @@ class LocationRepository @Inject constructor(
                         isOnline = dto.isOnline
                     )
                 }
-                emit(members)
+                val safeZones = body.safeZones.map { dto ->
+                    SafeZone(
+                        id = dto.zoneId,
+                        name = dto.name,
+                        centerLat = dto.lat,
+                        centerLng = dto.lng,
+                        radiusMeters = dto.radius,
+                        monitoredUserId = 0,
+                        createdBy = 0
+                    )
+                }
+                emit(FamilyData(members, safeZones))
             } else {
                 Timber.e("Failed to get family locations: ${response.message()}")
-                emit(emptyList())
+                emit(FamilyData())
             }
         } catch (e: Exception) {
             Timber.e(e, "Error getting family locations")
-            emit(emptyList())
+            emit(FamilyData())
+        }
+    }
+
+    suspend fun sendManualNotification(fromUserId: Int, toUserId: Int): Result<Boolean> {
+        return try {
+            val request = ManualNotifyRequest(
+                fromUserId = fromUserId,
+                toUserId = toUserId
+            )
+            val response = apiService.sendManualNotification(request)
+            if (response.isSuccessful) {
+                Result.success(true)
+            } else {
+                Result.failure(Exception("Failed to send notification: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error sending manual notification")
+            Result.failure(e)
+        }
+    }
+
+    suspend fun createSafeZone(
+        name: String,
+        lat: Double,
+        lng: Double,
+        radiusMeters: Int,
+        monitoredUserId: Int
+    ): Result<SafeZone> {
+        return try {
+            val createdBy = settingsRepository.userId.first()
+            val request = CreateSafeZoneRequest(
+                name = name,
+                lat = lat,
+                lng = lng,
+                radiusMeters = radiusMeters,
+                monitoredUserId = monitoredUserId,
+                createdBy = createdBy
+            )
+            val response = apiService.createSafeZone(request)
+            if (response.isSuccessful && response.body() != null) {
+                val body = response.body()!!
+                Result.success(
+                    SafeZone(
+                        id = body.zoneId,
+                        name = body.name,
+                        centerLat = body.lat,
+                        centerLng = body.lng,
+                        radiusMeters = body.radiusMeters,
+                        monitoredUserId = monitoredUserId,
+                        createdBy = createdBy
+                    )
+                )
+            } else {
+                Result.failure(Exception("Failed to create safe zone: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error creating safe zone")
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteSafeZone(zoneId: Int): Result<Boolean> {
+        return try {
+            val request = DeleteSafeZoneRequest(zoneId = zoneId)
+            val response = apiService.deleteSafeZone(request)
+            if (response.isSuccessful && response.body()?.success == true) {
+                Result.success(true)
+            } else {
+                Result.failure(Exception("Failed to delete safe zone: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error deleting safe zone")
+            Result.failure(e)
         }
     }
 

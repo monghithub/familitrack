@@ -116,8 +116,13 @@ class HomeViewModel @Inject constructor(
 
     fun updateInterval(minutes: Int) {
         viewModelScope.launch {
-            settingsRepository.setLocationInterval(minutes * 60)
+            val seconds = minutes * 60
+            settingsRepository.setLocationInterval(seconds)
             _uiState.update { it.copy(intervalMinutes = minutes) }
+
+            if (_uiState.value.isLocationEnabled) {
+                LocationForegroundService.updateInterval(application, seconds)
+            }
         }
     }
 }

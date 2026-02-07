@@ -42,6 +42,13 @@ data class ConfigUpdateResponse(
     @SerializedName("newInterval") val newInterval: Int
 )
 
+// Manual Notification
+data class ManualNotifyRequest(
+    @SerializedName("fromUserId") val fromUserId: Int,
+    @SerializedName("toUserId") val toUserId: Int,
+    @SerializedName("type") val type: String = "manual"
+)
+
 // Notification
 data class NotificationData(
     @SerializedName("alertType") val alertType: String,
@@ -52,7 +59,16 @@ data class NotificationData(
 
 // Family Locations
 data class FamilyLocationsResponse(
-    @SerializedName("members") val members: List<FamilyMemberDto>
+    @SerializedName("members") val members: List<FamilyMemberDto>,
+    @SerializedName("safeZones") val safeZones: List<SafeZoneDto> = emptyList()
+)
+
+data class SafeZoneDto(
+    @SerializedName("zoneId") val zoneId: Int,
+    @SerializedName("name") val name: String,
+    @SerializedName("lat") val lat: Double,
+    @SerializedName("lng") val lng: Double,
+    @SerializedName("radius") val radius: Int
 )
 
 data class FamilyMemberDto(
@@ -71,4 +87,33 @@ data class LocationDto(
     @SerializedName("longitude") val longitude: Double,
     @SerializedName("accuracy") val accuracy: Float?,
     @SerializedName("timestamp") val timestamp: String?
+)
+
+// Safe Zones CRUD
+data class CreateSafeZoneRequest(
+    @SerializedName("name") val name: String,
+    @SerializedName("lat") val lat: Double,
+    @SerializedName("lng") val lng: Double,
+    @SerializedName("radiusMeters") val radiusMeters: Int,
+    @SerializedName("monitoredUserId") val monitoredUserId: Int,
+    @SerializedName("createdBy") val createdBy: Int
+)
+
+data class CreateSafeZoneResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("zoneId") val zoneId: Int,
+    @SerializedName("name") val name: String,
+    @SerializedName("lat") val lat: Double,
+    @SerializedName("lng") val lng: Double,
+    @SerializedName("radiusMeters") val radiusMeters: Int
+)
+
+data class DeleteSafeZoneRequest(
+    @SerializedName("zoneId") val zoneId: Int
+)
+
+data class DeleteSafeZoneResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("zoneId") val zoneId: Int,
+    @SerializedName("name") val name: String
 )

@@ -4,17 +4,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import com.monghit.familytrack.data.repository.LocationRepository
+import com.monghit.familytrack.domain.model.SafeZone
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 data class MapUiState(
     val isLoading: Boolean = true,
     val familyLocations: List<FamilyLocationMarker> = emptyList(),
+    val safeZones: List<SafeZone> = emptyList(),
     val currentUserLocation: LatLng? = null,
     val error: String? = null
 )
@@ -29,6 +33,7 @@ class MapViewModel @Inject constructor(
 
     init {
         loadFamilyLocations()
+        startAutoRefresh()
     }
 
     private fun loadFamilyLocations() {
@@ -36,8 +41,8 @@ class MapViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
 
             try {
-                locationRepository.getFamilyLocations().collect { members ->
-                    val markers = members.map { member ->
+                locationRepository.getFamilyLocations().collect { familyData ->
+                    val markers = familyData.members.map { member ->
                         FamilyLocationMarker(
                             userId = member.user.id,
                             name = member.displayName,
@@ -53,17 +58,28 @@ class MapViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            familyLocations = markers
+                            familyLocations = markers,
+                            safeZones = familyData.safeZones
                         )
                     }
                 }
             } catch (e: Exception) {
+                Timber.e(e, "Error loading family locations")
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         error = e.message
                     )
                 }
+            }
+        }
+    }
+
+    private fun startAutoRefresh() {
+        viewModelScope.launch {
+            while (true) {
+                delay(30_000L)
+                refreshLocations()
             }
         }
     }

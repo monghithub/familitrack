@@ -28,6 +28,11 @@
     <string name="family_member_offline">Sin conexión</string>
     <string name="family_member_last_seen">Visto: %1$s</string>
     <string name="family_add_member">Añadir miembro</string>
+    <string name="family_empty">No hay miembros registrados</string>
+    <string name="family_notify_sent">Notificación enviada a %1$s</string>
+    <string name="family_role_admin">Admin</string>
+    <string name="family_role_monitor">Monitor</string>
+    <string name="family_role_monitored">Monitoreado</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Ajustes</string>
@@ -44,13 +49,28 @@
     <string name="settings_logout">Cerrar sesión</string>
     <string name="settings_about">Acerca de</string>
     <string name="settings_version">Versión %1$s</string>
+    <string name="settings_interval_value">%1$d min</string>
+    <string name="settings_device_info">Dispositivo</string>
+    <string name="settings_device_id">ID dispositivo: %1$d</string>
+    <string name="settings_user_id">ID usuario: %1$d</string>
+    <string name="settings_registered">Registrado: %1$s</string>
+    <string name="settings_last_update">Última ubicación: %1$s</string>
+    <string name="settings_token">Token FCM</string>
+    <string name="settings_actions">Acciones</string>
+    <string name="settings_send_location_now">Enviar ubicación ahora</string>
+    <string name="settings_test_notification">Probar notificación</string>
 
     <!-- Safe Zones -->
     <string name="safe_zones_title">Zonas Seguras</string>
+    <string name="safe_zones_empty">No hay zonas seguras configuradas</string>
     <string name="safe_zone_add">Añadir zona</string>
     <string name="safe_zone_name">Nombre de la zona</string>
+    <string name="safe_zone_lat">Latitud</string>
+    <string name="safe_zone_lng">Longitud</string>
     <string name="safe_zone_radius">Radio (metros)</string>
+    <string name="safe_zone_radius_value">%1$d m</string>
     <string name="safe_zone_delete">Eliminar zona</string>
+    <string name="safe_zone_delete_confirm">¿Eliminar la zona \"%1$s\"?</string>
 
     <!-- Alerts -->
     <string name="alert_zone_exit_title">Salida de zona segura</string>

@@ -29,6 +29,7 @@ class SettingsRepository @Inject constructor(
         val USER_NAME = stringPreferencesKey("user_name")
         val DEVICE_TOKEN = stringPreferencesKey("device_token")
         val DEVICE_NAME = stringPreferencesKey("device_name")
+        val DEVICE_ID = intPreferencesKey("device_id")
         val IS_REGISTERED = booleanPreferencesKey("is_registered")
         val LAST_LOCATION_UPDATE = longPreferencesKey("last_location_update")
     }
@@ -66,6 +67,11 @@ class SettingsRepository @Inject constructor(
     val deviceName: Flow<String> = context.dataStore.data
         .map { preferences ->
             preferences[PreferencesKeys.DEVICE_NAME] ?: android.os.Build.MODEL
+        }
+
+    val deviceId: Flow<Int> = context.dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.DEVICE_ID] ?: 0
         }
 
     val isRegistered: Flow<Boolean> = context.dataStore.data
@@ -117,6 +123,12 @@ class SettingsRepository @Inject constructor(
     suspend fun setDeviceName(name: String) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.DEVICE_NAME] = name
+        }
+    }
+
+    suspend fun setDeviceId(id: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DEVICE_ID] = id
         }
     }
 
