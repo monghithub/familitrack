@@ -30,6 +30,7 @@ import com.monghit.familytrack.R
 import com.monghit.familytrack.ui.screens.family.FamilyScreen
 import com.monghit.familytrack.ui.screens.home.HomeScreen
 import com.monghit.familytrack.ui.screens.map.MapScreen
+import com.monghit.familytrack.ui.screens.safezones.SafeZonesScreen
 import com.monghit.familytrack.ui.screens.settings.SettingsScreen
 
 data class BottomNavItem(
@@ -110,13 +111,22 @@ fun FamilyTrackNavHost() {
                 HomeScreen()
             }
             composable(NavRoutes.Map.route) {
-                MapScreen()
+                MapScreen(
+                    onNavigateToSafeZones = {
+                        navController.navigate(NavRoutes.SafeZones.route)
+                    }
+                )
             }
             composable(NavRoutes.Family.route) {
                 FamilyScreen()
             }
             composable(NavRoutes.Settings.route) {
                 SettingsScreen()
+            }
+            composable(NavRoutes.SafeZones.route) {
+                SafeZonesScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
         }
     }
