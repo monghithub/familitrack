@@ -1,6 +1,8 @@
 package com.monghit.familytrack.data.repository
 
 import com.monghit.familytrack.data.remote.ApiService
+import com.monghit.familytrack.data.remote.dto.CreateSafeZoneRequest
+import com.monghit.familytrack.data.remote.dto.DeleteSafeZoneRequest
 import com.monghit.familytrack.data.remote.dto.LocationUpdateRequest
 import com.monghit.familytrack.data.remote.dto.ManualNotifyRequest
 import com.monghit.familytrack.data.remote.dto.RegisterDeviceRequest
@@ -155,6 +157,61 @@ class LocationRepository @Inject constructor(
             }
         } catch (e: Exception) {
             Timber.e(e, "Error sending manual notification")
+            Result.failure(e)
+        }
+    }
+
+    suspend fun createSafeZone(
+        name: String,
+        lat: Double,
+        lng: Double,
+        radiusMeters: Int,
+        monitoredUserId: Int
+    ): Result<SafeZone> {
+        return try {
+            val createdBy = settingsRepository.userId.first()
+            val request = CreateSafeZoneRequest(
+                name = name,
+                lat = lat,
+                lng = lng,
+                radiusMeters = radiusMeters,
+                monitoredUserId = monitoredUserId,
+                createdBy = createdBy
+            )
+            val response = apiService.createSafeZone(request)
+            if (response.isSuccessful && response.body() != null) {
+                val body = response.body()!!
+                Result.success(
+                    SafeZone(
+                        id = body.zoneId,
+                        name = body.name,
+                        centerLat = body.lat,
+                        centerLng = body.lng,
+                        radiusMeters = body.radiusMeters,
+                        monitoredUserId = monitoredUserId,
+                        createdBy = createdBy
+                    )
+                )
+            } else {
+                Result.failure(Exception("Failed to create safe zone: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error creating safe zone")
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteSafeZone(zoneId: Int): Result<Boolean> {
+        return try {
+            val request = DeleteSafeZoneRequest(zoneId = zoneId)
+            val response = apiService.deleteSafeZone(request)
+            if (response.isSuccessful && response.body()?.success == true) {
+                Result.success(true)
+            } else {
+                Result.failure(Exception("Failed to delete safe zone: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error deleting safe zone")
             Result.failure(e)
         }
     }

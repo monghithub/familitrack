@@ -2,6 +2,10 @@ package com.monghit.familytrack.data.remote
 
 import com.monghit.familytrack.data.remote.dto.ConfigUpdateRequest
 import com.monghit.familytrack.data.remote.dto.ConfigUpdateResponse
+import com.monghit.familytrack.data.remote.dto.CreateSafeZoneRequest
+import com.monghit.familytrack.data.remote.dto.CreateSafeZoneResponse
+import com.monghit.familytrack.data.remote.dto.DeleteSafeZoneRequest
+import com.monghit.familytrack.data.remote.dto.DeleteSafeZoneResponse
 import com.monghit.familytrack.data.remote.dto.FamilyLocationsResponse
 import com.monghit.familytrack.data.remote.dto.LocationUpdateRequest
 import com.monghit.familytrack.data.remote.dto.ManualNotifyRequest
@@ -38,4 +42,14 @@ interface ApiService {
     suspend fun sendManualNotification(
         @Body request: ManualNotifyRequest
     ): Response<Unit>
+
+    @POST("api/safe-zones/create")
+    suspend fun createSafeZone(
+        @Body request: CreateSafeZoneRequest
+    ): Response<CreateSafeZoneResponse>
+
+    @POST("api/safe-zones/delete")
+    suspend fun deleteSafeZone(
+        @Body request: DeleteSafeZoneRequest
+    ): Response<DeleteSafeZoneResponse>
 }

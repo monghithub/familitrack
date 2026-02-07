@@ -88,3 +88,32 @@ data class LocationDto(
     @SerializedName("accuracy") val accuracy: Float?,
     @SerializedName("timestamp") val timestamp: String?
 )
+
+// Safe Zones CRUD
+data class CreateSafeZoneRequest(
+    @SerializedName("name") val name: String,
+    @SerializedName("lat") val lat: Double,
+    @SerializedName("lng") val lng: Double,
+    @SerializedName("radiusMeters") val radiusMeters: Int,
+    @SerializedName("monitoredUserId") val monitoredUserId: Int,
+    @SerializedName("createdBy") val createdBy: Int
+)
+
+data class CreateSafeZoneResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("zoneId") val zoneId: Int,
+    @SerializedName("name") val name: String,
+    @SerializedName("lat") val lat: Double,
+    @SerializedName("lng") val lng: Double,
+    @SerializedName("radiusMeters") val radiusMeters: Int
+)
+
+data class DeleteSafeZoneRequest(
+    @SerializedName("zoneId") val zoneId: Int
+)
+
+data class DeleteSafeZoneResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("zoneId") val zoneId: Int,
+    @SerializedName("name") val name: String
+)
