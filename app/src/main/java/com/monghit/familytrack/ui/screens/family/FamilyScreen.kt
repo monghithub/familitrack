@@ -1,6 +1,7 @@
 package com.monghit.familytrack.ui.screens.family
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,15 +17,24 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,40 +42,102 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.monghit.familytrack.R
 import com.monghit.familytrack.domain.model.FamilyMember
+import com.monghit.familytrack.domain.model.UserRole
 import com.monghit.familytrack.ui.theme.Error
 import com.monghit.familytrack.ui.theme.Success
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FamilyScreen(
     viewModel: FamilyViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = stringResource(R.string.family_title),
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+    LaunchedEffect(uiState.notifyMessage) {
+        uiState.notifyMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearNotifyMessage()
+        }
+    }
 
-        LazyColumn(
-            contentPadding = PaddingValues(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
         ) {
-            items(uiState.familyMembers) { member ->
-                FamilyMemberCard(member = member)
+            Text(
+                text = stringResource(R.string.family_title),
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            when {
+                uiState.isLoading && uiState.familyMembers.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+                uiState.error != null && uiState.familyMembers.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(R.string.error_network),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+                uiState.familyMembers.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(R.string.family_empty),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+                else -> {
+                    PullToRefreshBox(
+                        isRefreshing = uiState.isRefreshing,
+                        onRefresh = { viewModel.refresh() },
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        LazyColumn(
+                            contentPadding = PaddingValues(vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(uiState.familyMembers) { member ->
+                                FamilyMemberCard(
+                                    member = member,
+                                    onNotify = { viewModel.sendNotification(member) }
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
 @Composable
 private fun FamilyMemberCard(
-    member: FamilyMember
+    member: FamilyMember,
+    onNotify: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -77,7 +149,7 @@ private fun FamilyMemberCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Avatar placeholder
+            // Avatar
             Card(
                 modifier = Modifier.size(48.dp),
                 colors = CardDefaults.cardColors(
@@ -110,7 +182,19 @@ private fun FamilyMemberCard(
                         tint = if (member.isOnline) Success else Error
                     )
                 }
-                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = when (member.user.role) {
+                        UserRole.ADMIN -> stringResource(R.string.family_role_admin)
+                        UserRole.MONITOR -> stringResource(R.string.family_role_monitor)
+                        UserRole.MONITORED -> stringResource(R.string.family_role_monitored)
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.height(2.dp))
+
                 Text(
                     text = if (member.isOnline) {
                         stringResource(R.string.family_member_online)
@@ -122,10 +206,24 @@ private fun FamilyMemberCard(
                 )
             }
 
+            // Notify button
+            IconButton(onClick = onNotify) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = "Notificar",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            // Location icon
             Icon(
                 imageVector = Icons.Default.LocationOn,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                tint = if (member.lastLocation != null) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                }
             )
         }
     }
