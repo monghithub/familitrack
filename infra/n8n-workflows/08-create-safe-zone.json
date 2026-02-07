@@ -1,0 +1,83 @@
+{
+  "name": "FamilyTrack - Create Safe Zone",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "api/safe-zones/create",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-create-zone",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "webhookId": "create-safe-zone-wh"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO safe_zones (name, center_lat, center_lng, radius_meters, monitored_user_id, created_by, is_active) VALUES ('{{ $json.name }}', {{ $json.lat }}, {{ $json.lng }}, {{ $json.radiusMeters }}, {{ $json.monitoredUserId }}, {{ $json.createdBy }}, true) RETURNING zone_id, name, center_lat, center_lng, radius_meters",
+        "options": {}
+      },
+      "id": "postgres-insert-zone",
+      "name": "Insert Safe Zone",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [440, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $input.first().json;\nreturn [{\n  json: {\n    success: true,\n    zoneId: row.zone_id,\n    name: row.name,\n    lat: parseFloat(row.center_lat),\n    lng: parseFloat(row.center_lng),\n    radiusMeters: row.radius_meters\n  }\n}];"
+      },
+      "id": "code-format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 201
+        }
+      },
+      "id": "response-create-zone",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Insert Safe Zone", "type": "main", "index": 0 }]
+      ]
+    },
+    "Insert Safe Zone": {
+      "main": [
+        [{ "node": "Format Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [{ "node": "Response", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

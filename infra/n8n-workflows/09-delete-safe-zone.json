@@ -1,0 +1,83 @@
+{
+  "name": "FamilyTrack - Delete Safe Zone",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "api/safe-zones/delete",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-delete-zone",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "webhookId": "delete-safe-zone-wh"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE safe_zones SET is_active = false WHERE zone_id = {{ $json.zoneId }} RETURNING zone_id, name",
+        "options": {}
+      },
+      "id": "postgres-delete-zone",
+      "name": "Soft Delete Zone",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [440, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\nif (rows.length === 0 || !rows[0].json.zone_id) {\n  return [{ json: { success: false, error: 'Zone not found' } }];\n}\nreturn [{ json: { success: true, zoneId: rows[0].json.zone_id, name: rows[0].json.name } }];"
+      },
+      "id": "code-format-delete",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "response-delete-zone",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Soft Delete Zone", "type": "main", "index": 0 }]
+      ]
+    },
+    "Soft Delete Zone": {
+      "main": [
+        [{ "node": "Format Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [{ "node": "Response", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}
