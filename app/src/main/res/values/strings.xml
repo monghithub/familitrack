@@ -49,6 +49,16 @@
     <string name="settings_logout">Cerrar sesión</string>
     <string name="settings_about">Acerca de</string>
     <string name="settings_version">Versión %1$s</string>
+    <string name="settings_interval_value">%1$d min</string>
+    <string name="settings_device_info">Dispositivo</string>
+    <string name="settings_device_id">ID dispositivo: %1$d</string>
+    <string name="settings_user_id">ID usuario: %1$d</string>
+    <string name="settings_registered">Registrado: %1$s</string>
+    <string name="settings_last_update">Última ubicación: %1$s</string>
+    <string name="settings_token">Token FCM</string>
+    <string name="settings_actions">Acciones</string>
+    <string name="settings_send_location_now">Enviar ubicación ahora</string>
+    <string name="settings_test_notification">Probar notificación</string>
 
     <!-- Safe Zones -->
     <string name="safe_zones_title">Zonas Seguras</string>
