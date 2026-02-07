@@ -3,9 +3,11 @@ package com.monghit.familytrack.data.repository
 import com.monghit.familytrack.data.remote.ApiService
 import com.monghit.familytrack.data.remote.dto.LocationUpdateRequest
 import com.monghit.familytrack.data.remote.dto.RegisterDeviceRequest
+import com.monghit.familytrack.domain.model.Device
 import com.monghit.familytrack.domain.model.FamilyMember
 import com.monghit.familytrack.domain.model.Location
-import com.monghit.familytrack.domain.model.LocationUpdate
+import com.monghit.familytrack.domain.model.User
+import com.monghit.familytrack.domain.model.UserRole
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -69,9 +71,54 @@ class LocationRepository @Inject constructor(
     }
 
     fun getFamilyLocations(): Flow<List<FamilyMember>> = flow {
-        // TODO: Implement API call to get family locations
-        // For now, emit empty list
-        emit(emptyList())
+        try {
+            val response = apiService.getFamilyLocations()
+            if (response.isSuccessful && response.body() != null) {
+                val members = response.body()!!.members.map { dto ->
+                    val role = when (dto.role.lowercase()) {
+                        "admin" -> UserRole.ADMIN
+                        "monitor" -> UserRole.MONITOR
+                        else -> UserRole.MONITORED
+                    }
+                    FamilyMember(
+                        user = User(
+                            id = dto.userId,
+                            name = dto.name,
+                            role = role
+                        ),
+                        device = if (dto.deviceId != null) {
+                            Device(
+                                id = dto.deviceId,
+                                userId = dto.userId,
+                                deviceToken = "",
+                                deviceName = dto.deviceName ?: "",
+                                locationInterval = 300,
+                                isActive = true,
+                                lastSeen = null
+                            )
+                        } else null,
+                        lastLocation = if (dto.location != null) {
+                            Location(
+                                deviceId = dto.deviceId ?: 0,
+                                userId = dto.userId,
+                                latitude = dto.location.latitude,
+                                longitude = dto.location.longitude,
+                                accuracy = dto.location.accuracy ?: 0f,
+                                timestamp = System.currentTimeMillis()
+                            )
+                        } else null,
+                        isOnline = dto.isOnline
+                    )
+                }
+                emit(members)
+            } else {
+                Timber.e("Failed to get family locations: ${response.message()}")
+                emit(emptyList())
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error getting family locations")
+            emit(emptyList())
+        }
     }
 
     suspend fun updateLocationInterval(seconds: Int): Result<Boolean> {

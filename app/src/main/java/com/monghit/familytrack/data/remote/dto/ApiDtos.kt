@@ -49,3 +49,26 @@ data class NotificationData(
     @SerializedName("userId") val userId: Int? = null,
     @SerializedName("zoneName") val zoneName: String? = null
 )
+
+// Family Locations
+data class FamilyLocationsResponse(
+    @SerializedName("members") val members: List<FamilyMemberDto>
+)
+
+data class FamilyMemberDto(
+    @SerializedName("userId") val userId: Int,
+    @SerializedName("name") val name: String,
+    @SerializedName("role") val role: String,
+    @SerializedName("deviceId") val deviceId: Int?,
+    @SerializedName("deviceName") val deviceName: String?,
+    @SerializedName("isOnline") val isOnline: Boolean,
+    @SerializedName("lastSeenFormatted") val lastSeenFormatted: String,
+    @SerializedName("location") val location: LocationDto?
+)
+
+data class LocationDto(
+    @SerializedName("latitude") val latitude: Double,
+    @SerializedName("longitude") val longitude: Double,
+    @SerializedName("accuracy") val accuracy: Float?,
+    @SerializedName("timestamp") val timestamp: String?
+)

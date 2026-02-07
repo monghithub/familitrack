@@ -1,5 +1,7 @@
 package com.monghit.familytrack.ui.screens.home
 
+import android.Manifest
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.LocationOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -19,23 +22,71 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.monghit.familytrack.R
 import com.monghit.familytrack.ui.theme.Error
 import com.monghit.familytrack.ui.theme.Success
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var showPermissionDialog by remember { mutableStateOf(false) }
+
+    val permissions = buildList {
+        add(Manifest.permission.ACCESS_FINE_LOCATION)
+        add(Manifest.permission.ACCESS_COARSE_LOCATION)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    val permissionsState = rememberMultiplePermissionsState(permissions) { permissionsResult ->
+        val locationGranted = permissionsResult[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                permissionsResult[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (locationGranted) {
+            viewModel.toggleLocationSharing(true)
+        }
+    }
+
+    val onLocationToggle: (Boolean) -> Unit = { enabled ->
+        if (enabled) {
+            if (permissionsState.allPermissionsGranted) {
+                viewModel.toggleLocationSharing(true)
+            } else if (permissionsState.shouldShowRationale) {
+                showPermissionDialog = true
+            } else {
+                permissionsState.launchMultiplePermissionRequest()
+            }
+        } else {
+            viewModel.toggleLocationSharing(false)
+        }
+    }
+
+    if (showPermissionDialog) {
+        PermissionRationaleDialog(
+            onDismiss = { showPermissionDialog = false },
+            onConfirm = {
+                showPermissionDialog = false
+                permissionsState.launchMultiplePermissionRequest()
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -61,7 +112,7 @@ fun HomeScreen(
         // Location Toggle
         LocationToggle(
             isEnabled = uiState.isLocationEnabled,
-            onToggle = viewModel::toggleLocationSharing
+            onToggle = onLocationToggle
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -196,4 +247,30 @@ private fun IntervalSlider(
             }
         }
     }
+}
+
+@Composable
+private fun PermissionRationaleDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = stringResource(R.string.permission_location_title))
+        },
+        text = {
+            Text(text = stringResource(R.string.permission_location_rationale))
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(stringResource(R.string.permission_grant))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
 }

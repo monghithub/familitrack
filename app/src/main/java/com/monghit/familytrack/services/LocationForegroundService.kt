@@ -146,6 +146,7 @@ class LocationForegroundService : Service() {
             locationRepository.sendLocation(location)
                 .onSuccess {
                     Timber.d("Location sent successfully")
+                    settingsRepository.setLastLocationUpdate(System.currentTimeMillis())
                 }
                 .onFailure { error ->
                     Timber.e(error, "Failed to send location")

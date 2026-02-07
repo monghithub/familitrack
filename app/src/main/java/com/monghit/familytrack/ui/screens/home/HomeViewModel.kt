@@ -1,10 +1,12 @@
 package com.monghit.familytrack.ui.screens.home
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.messaging.FirebaseMessaging
 import com.monghit.familytrack.data.repository.LocationRepository
 import com.monghit.familytrack.data.repository.SettingsRepository
+import com.monghit.familytrack.services.LocationForegroundService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,6 +16,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 data class HomeUiState(
@@ -26,9 +31,12 @@ data class HomeUiState(
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    private val application: Application,
     private val settingsRepository: SettingsRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {
+
+    private val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -52,6 +60,16 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.isRegistered.collect { registered ->
                 _uiState.update { it.copy(isRegistered = registered) }
+            }
+        }
+        viewModelScope.launch {
+            settingsRepository.lastLocationUpdate.collect { timestamp ->
+                val formatted = if (timestamp > 0) {
+                    dateFormat.format(Date(timestamp))
+                } else {
+                    "Nunca"
+                }
+                _uiState.update { it.copy(lastUpdateFormatted = formatted) }
             }
         }
     }
@@ -88,6 +106,11 @@ class HomeViewModel @Inject constructor(
     fun toggleLocationSharing(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setLocationEnabled(enabled)
+            if (enabled) {
+                LocationForegroundService.start(application)
+            } else {
+                LocationForegroundService.stop(application)
+            }
         }
     }
 

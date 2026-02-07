@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +7,13 @@ plugins {
     alias(libs.plugins.google.services)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+}
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(localPropertiesFile.inputStream())
+    }
 }
 
 android {
@@ -22,8 +31,8 @@ android {
 
         buildConfigField("String", "BASE_URL", "\"https://server.monghit.com/webhook/\"")
 
-        // Google Maps API Key (set in local.properties or use empty for now)
-        manifestPlaceholders["MAPS_API_KEY"] = project.findProperty("MAPS_API_KEY") ?: ""
+        // Google Maps API Key (from local.properties)
+        manifestPlaceholders["MAPS_API_KEY"] = localProperties.getProperty("MAPS_API_KEY", "")
     }
 
     buildTypes {
@@ -119,6 +128,9 @@ dependencies {
 
     // Logging
     implementation(libs.timber)
+
+    // Permissions
+    implementation(libs.accompanist.permissions)
 
     // Testing
     testImplementation(libs.junit)

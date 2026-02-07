@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -29,6 +30,7 @@ class SettingsRepository @Inject constructor(
         val DEVICE_TOKEN = stringPreferencesKey("device_token")
         val DEVICE_NAME = stringPreferencesKey("device_name")
         val IS_REGISTERED = booleanPreferencesKey("is_registered")
+        val LAST_LOCATION_UPDATE = longPreferencesKey("last_location_update")
     }
 
     val isLocationEnabled: Flow<Boolean> = context.dataStore.data
@@ -69,6 +71,11 @@ class SettingsRepository @Inject constructor(
     val isRegistered: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
             preferences[PreferencesKeys.IS_REGISTERED] ?: false
+        }
+
+    val lastLocationUpdate: Flow<Long> = context.dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.LAST_LOCATION_UPDATE] ?: 0L
         }
 
     suspend fun setLocationEnabled(enabled: Boolean) {
@@ -116,6 +123,12 @@ class SettingsRepository @Inject constructor(
     suspend fun setRegistered(registered: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.IS_REGISTERED] = registered
+        }
+    }
+
+    suspend fun setLastLocationUpdate(timestamp: Long) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_LOCATION_UPDATE] = timestamp
         }
     }
 
