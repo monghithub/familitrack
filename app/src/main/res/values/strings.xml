@@ -62,10 +62,15 @@
 
     <!-- Safe Zones -->
     <string name="safe_zones_title">Zonas Seguras</string>
+    <string name="safe_zones_empty">No hay zonas seguras configuradas</string>
     <string name="safe_zone_add">Añadir zona</string>
     <string name="safe_zone_name">Nombre de la zona</string>
+    <string name="safe_zone_lat">Latitud</string>
+    <string name="safe_zone_lng">Longitud</string>
     <string name="safe_zone_radius">Radio (metros)</string>
+    <string name="safe_zone_radius_value">%1$d m</string>
     <string name="safe_zone_delete">Eliminar zona</string>
+    <string name="safe_zone_delete_confirm">¿Eliminar la zona \"%1$s\"?</string>
 
     <!-- Alerts -->
     <string name="alert_zone_exit_title">Salida de zona segura</string>
