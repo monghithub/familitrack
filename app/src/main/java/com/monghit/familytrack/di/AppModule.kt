@@ -4,6 +4,7 @@ import android.content.Context
 import com.monghit.familytrack.BuildConfig
 import com.monghit.familytrack.data.remote.ApiService
 import com.monghit.familytrack.data.repository.LocationRepository
+import com.monghit.familytrack.data.repository.SecurityRepository
 import com.monghit.familytrack.data.repository.SettingsRepository
 import dagger.Module
 import dagger.Provides
@@ -62,6 +63,14 @@ object AppModule {
         @ApplicationContext context: Context
     ): SettingsRepository {
         return SettingsRepository(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSecurityRepository(
+        @ApplicationContext context: Context
+    ): SecurityRepository {
+        return SecurityRepository(context)
     }
 
     @Provides
