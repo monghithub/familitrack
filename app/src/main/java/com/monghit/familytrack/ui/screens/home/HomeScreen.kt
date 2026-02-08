@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -162,6 +163,11 @@ fun HomeScreen(
                 currentInterval = uiState.intervalMinutes,
                 onIntervalChange = viewModel::updateInterval
             )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Quick Messages
+            QuickMessages(onSend = viewModel::sendQuickMessage)
         }
 
         ExtendedFloatingActionButton(
@@ -302,6 +308,48 @@ private fun IntervalSlider(
             ) {
                 Text("1 min", style = MaterialTheme.typography.bodySmall)
                 Text("60 min", style = MaterialTheme.typography.bodySmall)
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuickMessages(onSend: (String) -> Unit) {
+    val messages = listOf(
+        "Estoy bien",
+        "Voy para casa",
+        "Estoy llegando",
+        "Llamame",
+        "Voy a tardar"
+    )
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Mensajes rapidos",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                messages.take(3).forEach { msg ->
+                    AssistChip(
+                        onClick = { onSend(msg) },
+                        label = { Text(msg, style = MaterialTheme.typography.labelSmall) }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                messages.drop(3).forEach { msg ->
+                    AssistChip(
+                        onClick = { onSend(msg) },
+                        label = { Text(msg, style = MaterialTheme.typography.labelSmall) }
+                    )
+                }
             }
         }
     }
