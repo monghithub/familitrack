@@ -23,7 +23,9 @@ data class LocationUpdateRequest(
     @SerializedName("latitude") val latitude: Double,
     @SerializedName("longitude") val longitude: Double,
     @SerializedName("accuracy") val accuracy: Float,
-    @SerializedName("timestamp") val timestamp: Long
+    @SerializedName("timestamp") val timestamp: Long,
+    @SerializedName("batteryLevel") val batteryLevel: Int? = null,
+    @SerializedName("isCharging") val isCharging: Boolean? = null
 )
 
 data class LocationUpdateResponse(
@@ -79,7 +81,9 @@ data class FamilyMemberDto(
     @SerializedName("deviceName") val deviceName: String?,
     @SerializedName("isOnline") val isOnline: Boolean,
     @SerializedName("lastSeenFormatted") val lastSeenFormatted: String,
-    @SerializedName("location") val location: LocationDto?
+    @SerializedName("location") val location: LocationDto?,
+    @SerializedName("batteryLevel") val batteryLevel: Int? = null,
+    @SerializedName("isCharging") val isCharging: Boolean? = null
 )
 
 data class LocationDto(

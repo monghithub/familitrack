@@ -5,8 +5,10 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
+import android.os.BatteryManager
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
@@ -138,10 +140,22 @@ class LocationForegroundService : Service() {
         }
     }
 
+    private fun getBatteryInfo(): Pair<Int, Boolean> {
+        val batteryStatus = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        val level = batteryStatus?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+        val scale = batteryStatus?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
+        val batteryPct = if (level >= 0) (level * 100) / scale else -1
+        val status = batteryStatus?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
+        val isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
+                status == BatteryManager.BATTERY_STATUS_FULL
+        return Pair(batteryPct, isCharging)
+    }
+
     private fun sendLocationToServer(androidLocation: android.location.Location) {
         serviceScope.launch {
             val userId = settingsRepository.userId.first()
             val deviceId = settingsRepository.deviceId.first()
+            val (batteryLevel, isCharging) = getBatteryInfo()
 
             val location = Location(
                 deviceId = deviceId,
@@ -152,9 +166,9 @@ class LocationForegroundService : Service() {
                 timestamp = System.currentTimeMillis()
             )
 
-            locationRepository.sendLocation(location)
+            locationRepository.sendLocation(location, batteryLevel, isCharging)
                 .onSuccess {
-                    Timber.d("Location sent successfully")
+                    Timber.d("Location sent successfully (battery: $batteryLevel%, charging: $isCharging)")
                     settingsRepository.setLastLocationUpdate(System.currentTimeMillis())
                 }
                 .onFailure { error ->

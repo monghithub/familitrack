@@ -50,7 +50,11 @@ class LocationRepository @Inject constructor(
         }
     }
 
-    suspend fun sendLocation(location: Location): Result<Boolean> {
+    suspend fun sendLocation(
+        location: Location,
+        batteryLevel: Int = -1,
+        isCharging: Boolean = false
+    ): Result<Boolean> {
         return try {
             val deviceToken = settingsRepository.deviceToken.first()
             val userId = settingsRepository.userId.first()
@@ -61,7 +65,9 @@ class LocationRepository @Inject constructor(
                 latitude = location.latitude,
                 longitude = location.longitude,
                 accuracy = location.accuracy,
-                timestamp = location.timestamp
+                timestamp = location.timestamp,
+                batteryLevel = if (batteryLevel >= 0) batteryLevel else null,
+                isCharging = if (batteryLevel >= 0) isCharging else null
             )
 
             val response = apiService.updateLocation(request)
@@ -120,7 +126,9 @@ class LocationRepository @Inject constructor(
                                 timestamp = System.currentTimeMillis()
                             )
                         } else null,
-                        isOnline = dto.isOnline
+                        isOnline = dto.isOnline,
+                        batteryLevel = dto.batteryLevel,
+                        isCharging = dto.isCharging
                     )
                 }
                 val safeZones = body.safeZones.map { dto ->
