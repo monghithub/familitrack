@@ -13,7 +13,7 @@ CREATE TABLE users (
     role VARCHAR(50) NOT NULL DEFAULT 'monitored', -- 'admin', 'monitor', 'monitored'
     family_id INT,
     pin_hash VARCHAR(64), -- SHA-256 hash del PIN (4 dígitos)
-    avatar_base64 LONGTEXT,
+    avatar_base64 TEXT,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -176,7 +176,7 @@ CREATE TABLE photos (
     family_id INT REFERENCES families(family_id),
     from_user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     to_user_id INT REFERENCES users(user_id),
-    photo_base64 LONGTEXT NOT NULL,
+    photo_base64 TEXT NOT NULL,
     caption VARCHAR(200),
     is_viewed BOOLEAN DEFAULT FALSE,
     viewed_at TIMESTAMP,
