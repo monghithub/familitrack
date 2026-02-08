@@ -15,6 +15,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BatteryAlert
+import androidx.compose.material.icons.filled.BatteryChargingFull
+import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
@@ -192,6 +195,33 @@ private fun FamilyMemberCard(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
+
+                if (member.batteryLevel != null) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        val batteryIcon = when {
+                            member.isCharging == true -> Icons.Default.BatteryChargingFull
+                            member.batteryLevel <= 15 -> Icons.Default.BatteryAlert
+                            else -> Icons.Default.BatteryFull
+                        }
+                        val batteryColor = when {
+                            member.batteryLevel <= 15 -> Error
+                            member.batteryLevel <= 30 -> MaterialTheme.colorScheme.tertiary
+                            else -> Success
+                        }
+                        Icon(
+                            imageVector = batteryIcon,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = batteryColor
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "${member.batteryLevel}%",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = batteryColor
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(2.dp))
 
