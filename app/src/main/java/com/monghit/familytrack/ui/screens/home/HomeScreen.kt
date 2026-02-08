@@ -107,8 +107,8 @@ fun HomeScreen(
     if (showSosDialog) {
         AlertDialog(
             onDismissRequest = { showSosDialog = false },
-            title = { Text("Enviar SOS") },
-            text = { Text("Se enviara una alerta de emergencia a todos los miembros de tu familia. Continuar?") },
+            title = { Text(stringResource(R.string.home_sos_title)) },
+            text = { Text(stringResource(R.string.home_sos_confirm)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -117,12 +117,12 @@ fun HomeScreen(
                     },
                     enabled = !uiState.isSendingSos
                 ) {
-                    Text("Enviar SOS", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.home_sos_send), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showSosDialog = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -316,16 +316,16 @@ private fun IntervalSlider(
 @Composable
 private fun QuickMessages(onSend: (String) -> Unit) {
     val messages = listOf(
-        "Estoy bien",
-        "Voy para casa",
-        "Estoy llegando",
-        "Llamame",
-        "Voy a tardar"
+        stringResource(R.string.quick_msg_im_fine),
+        stringResource(R.string.quick_msg_going_home),
+        stringResource(R.string.quick_msg_arriving),
+        stringResource(R.string.quick_msg_call_me),
+        stringResource(R.string.quick_msg_will_be_late)
     )
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Mensajes rapidos",
+                text = stringResource(R.string.home_quick_messages),
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
