@@ -8,21 +8,21 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "webhook-family-join",
+      "id": "webhook-join-family",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [220, 300],
-      "webhookId": "family-join-wh"
+      "webhookId": "join-family-wh"
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT family_id, name FROM families WHERE invite_code = '{{ $json.inviteCode }}' AND is_active = true",
+        "query": "WITH family_found AS (SELECT family_id, name FROM families WHERE invite_code = '{{ $json.inviteCode }}' AND is_active = true), new_user AS (INSERT INTO users (name, family_id, role) SELECT '{{ $json.userName }}', (SELECT family_id FROM family_found), 'monitored' RETURNING user_id, name, role) SELECT ff.family_id, ff.name, nu.user_id, nu.role FROM family_found ff CROSS JOIN new_user nu",
         "options": {}
       },
-      "id": "postgres-get-family",
-      "name": "Get Family",
+      "id": "postgres-join-family",
+      "name": "Join Family",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [440, 300],
@@ -35,49 +35,13 @@
     },
     {
       "parameters": {
-        "operation": "executeQuery",
-        "query": "INSERT INTO users (name, family_id, role) VALUES ('{{ $json.userName }}', {{ $node[\"Get Family\"].json.family_id }}, 'monitored') RETURNING user_id, name, role",
-        "options": {}
-      },
-      "id": "postgres-insert-user",
-      "name": "Insert User",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.5,
-      "position": [660, 300],
-      "credentials": {
-        "postgres": {
-          "id": "tUhgoGHD50ho6lDG",
-          "name": "FamilyTrack PostgreSQL"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "INSERT INTO user_families (user_id, family_id, role) VALUES ({{ $node[\"Insert User\"].json.user_id }}, {{ $node[\"Get Family\"].json.family_id }}, 'monitored')",
-        "options": {}
-      },
-      "id": "postgres-link-user-family",
-      "name": "Link User-Family",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.5,
-      "position": [880, 300],
-      "credentials": {
-        "postgres": {
-          "id": "tUhgoGHD50ho6lDG",
-          "name": "FamilyTrack PostgreSQL"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "const user = $node[\"Insert User\"].json;\nconst family = $node[\"Get Family\"].json;\nreturn [{\n  json: {\n    success: true,\n    userId: user.user_id,\n    familyId: family.family_id,\n    familyName: family.name,\n    role: user.role\n  }\n}];"
+        "jsCode": "const row = $input.first().json;\nreturn [{\n  json: {\n    success: true,\n    userId: row.user_id,\n    familyId: row.family_id,\n    familyName: row.name,\n    role: row.role\n  }\n}];"
       },
       "id": "code-format-response",
       "name": "Format Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1100, 300]
+      "position": [660, 300]
     },
     {
       "parameters": {
@@ -87,30 +51,20 @@
           "responseCode": 201
         }
       },
-      "id": "response-family-join",
+      "id": "response-join-family",
       "name": "Response",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [1320, 300]
+      "position": [880, 300]
     }
   ],
   "connections": {
     "Webhook": {
       "main": [
-        [{ "node": "Get Family", "type": "main", "index": 0 }]
+        [{ "node": "Join Family", "type": "main", "index": 0 }]
       ]
     },
-    "Get Family": {
-      "main": [
-        [{ "node": "Insert User", "type": "main", "index": 0 }]
-      ]
-    },
-    "Insert User": {
-      "main": [
-        [{ "node": "Link User-Family", "type": "main", "index": 0 }]
-      ]
-    },
-    "Link User-Family": {
+    "Join Family": {
       "main": [
         [{ "node": "Format Response", "type": "main", "index": 0 }]
       ]

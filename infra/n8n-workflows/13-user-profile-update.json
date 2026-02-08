@@ -1,5 +1,5 @@
 {
-  "name": "FamilyTrack - Update User Profile",
+  "name": "FamilyTrack - Update Profile",
   "nodes": [
     {
       "parameters": {
@@ -8,21 +8,21 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "webhook-user-update",
+      "id": "webhook-update-profile",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [220, 300],
-      "webhookId": "user-update-wh"
+      "webhookId": "update-profile-wh"
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE users SET name = COALESCE('{{ $json.name }}', name), avatar_base64 = COALESCE('{{ $json.avatar }}', avatar_base64), updated_at = NOW() WHERE user_id = {{ $json.userId }} RETURNING user_id, name, avatar_base64, role",
+        "query": "UPDATE users SET name = COALESCE(NULLIF('{{ $json.name }}', ''), name), avatar_base64 = COALESCE(NULLIF('{{ $json.avatar }}', ''), avatar_base64), updated_at = NOW() WHERE user_id = {{ $json.userId }} RETURNING user_id, name, avatar_base64, role",
         "options": {}
       },
       "id": "postgres-update-profile",
-      "name": "Update User Profile",
+      "name": "Update Profile",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [440, 300],
@@ -51,7 +51,7 @@
           "responseCode": 200
         }
       },
-      "id": "response-user-update",
+      "id": "response-update-profile",
       "name": "Response",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -61,10 +61,10 @@
   "connections": {
     "Webhook": {
       "main": [
-        [{ "node": "Update User Profile", "type": "main", "index": 0 }]
+        [{ "node": "Update Profile", "type": "main", "index": 0 }]
       ]
     },
-    "Update User Profile": {
+    "Update Profile": {
       "main": [
         [{ "node": "Format Response", "type": "main", "index": 0 }]
       ]

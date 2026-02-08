@@ -1,5 +1,5 @@
 {
-  "name": "FamilyTrack - Get User Profile",
+  "name": "FamilyTrack - Get Profile",
   "nodes": [
     {
       "parameters": {
@@ -8,12 +8,12 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "webhook-user-profile",
+      "id": "webhook-get-profile",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [220, 300],
-      "webhookId": "user-profile-wh"
+      "webhookId": "get-profile-wh"
     },
     {
       "parameters": {
@@ -22,7 +22,7 @@
         "options": {}
       },
       "id": "postgres-get-profile",
-      "name": "Get User Profile",
+      "name": "Get Profile",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [440, 300],
@@ -51,7 +51,7 @@
           "responseCode": 200
         }
       },
-      "id": "response-user-profile",
+      "id": "response-get-profile",
       "name": "Response",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -61,10 +61,10 @@
   "connections": {
     "Webhook": {
       "main": [
-        [{ "node": "Get User Profile", "type": "main", "index": 0 }]
+        [{ "node": "Get Profile", "type": "main", "index": 0 }]
       ]
     },
-    "Get User Profile": {
+    "Get Profile": {
       "main": [
         [{ "node": "Format Response", "type": "main", "index": 0 }]
       ]
