@@ -54,6 +54,7 @@ import com.monghit.familytrack.R
 fun SettingsScreen(
     onNavigateToProfile: () -> Unit = {},
     onNavigateToChat: () -> Unit = {},
+    onNavigateToPermissions: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -134,6 +135,19 @@ fun SettingsScreen(
                         checked = uiState.isBiometricEnabled,
                         onCheckedChange = viewModel::toggleBiometric
                     )
+                }
+                HorizontalDivider()
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onNavigateToPermissions,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Gestionar permisos")
+                    }
                 }
             }
 
