@@ -36,6 +36,7 @@ class SettingsRepository @Inject constructor(
         val FAMILY_NAME = stringPreferencesKey("family_name")
         val INVITE_CODE = stringPreferencesKey("invite_code")
         val USER_ROLE = stringPreferencesKey("user_role")
+        val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
     }
 
     val isLocationEnabled: Flow<Boolean> = context.dataStore.data
@@ -106,6 +107,11 @@ class SettingsRepository @Inject constructor(
     val userRole: Flow<String> = context.dataStore.data
         .map { preferences ->
             preferences[PreferencesKeys.USER_ROLE] ?: ""
+        }
+
+    val onboardingCompleted: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
         }
 
     suspend fun setLocationEnabled(enabled: Boolean) {
@@ -189,6 +195,12 @@ class SettingsRepository @Inject constructor(
     suspend fun setUserRole(role: String) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.USER_ROLE] = role
+        }
+    }
+
+    suspend fun setOnboardingCompleted(completed: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.ONBOARDING_COMPLETED] = completed
         }
     }
 

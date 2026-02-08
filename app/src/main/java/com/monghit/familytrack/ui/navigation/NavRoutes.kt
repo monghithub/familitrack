@@ -11,4 +11,6 @@ sealed class NavRoutes(val route: String) {
     data object PinLock : NavRoutes("pin_lock")
     data object Profile : NavRoutes("profile")
     data object Chat : NavRoutes("chat")
+    data object Splash : NavRoutes("splash")
+    data object Onboarding : NavRoutes("onboarding")
 }
