@@ -50,7 +50,19 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo -e "${YELLOW}[1/3]${NC} Borrando todas las tablas..."
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-if psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f "$SCRIPT_DIR/00-reset-db.sql"; then
+# Detectar si estamos en Docker o si psql está disponible localmente
+if command -v psql &> /dev/null; then
+    PSQL_CMD="psql"
+    PSQL_HOST="-h $DB_HOST"
+elif command -v docker &> /dev/null && docker ps | grep -q familytrack-db; then
+    PSQL_CMD="docker exec familytrack-db psql"
+    PSQL_HOST=""
+else
+    echo -e "${RED}✗ No se encontró psql ni Docker con familytrack-db${NC}"
+    exit 1
+fi
+
+if $PSQL_CMD $PSQL_HOST -U "$DB_USER" -d "$DB_NAME" -f "$SCRIPT_DIR/00-reset-db.sql"; then
     echo -e "${GREEN}✓ Tablas borradas exitosamente${NC}"
 else
     echo -e "${RED}✗ Error al borrar tablas${NC}"
@@ -62,7 +74,7 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo -e "${YELLOW}[2/3]${NC} Creando esquema v2.0..."
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-if psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f "$SCRIPT_DIR/01-schema-v2.sql"; then
+if $PSQL_CMD $PSQL_HOST -U "$DB_USER" -d "$DB_NAME" -f "$SCRIPT_DIR/01-schema-v2.sql"; then
     echo -e "${GREEN}✓ Esquema v2.0 creado exitosamente${NC}"
 else
     echo -e "${RED}✗ Error al crear esquema${NC}"
@@ -74,7 +86,7 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo -e "${YELLOW}[3/3]${NC} Insertando datos de ejemplo..."
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-if psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f "$SCRIPT_DIR/02-seed-v2.sql"; then
+if $PSQL_CMD $PSQL_HOST -U "$DB_USER" -d "$DB_NAME" -f "$SCRIPT_DIR/02-seed-v2.sql"; then
     echo -e "${GREEN}✓ Datos de ejemplo insertados exitosamente${NC}"
 else
     echo -e "${RED}✗ Error al insertar datos${NC}"
