@@ -1,16 +1,6 @@
 package com.monghit.familytrack.data.remote
 
-import com.monghit.familytrack.data.remote.dto.ConfigUpdateRequest
-import com.monghit.familytrack.data.remote.dto.ConfigUpdateResponse
-import com.monghit.familytrack.data.remote.dto.CreateSafeZoneRequest
-import com.monghit.familytrack.data.remote.dto.CreateSafeZoneResponse
-import com.monghit.familytrack.data.remote.dto.DeleteSafeZoneRequest
-import com.monghit.familytrack.data.remote.dto.DeleteSafeZoneResponse
-import com.monghit.familytrack.data.remote.dto.FamilyLocationsResponse
-import com.monghit.familytrack.data.remote.dto.LocationUpdateRequest
-import com.monghit.familytrack.data.remote.dto.ManualNotifyRequest
-import com.monghit.familytrack.data.remote.dto.RegisterDeviceRequest
-import com.monghit.familytrack.data.remote.dto.RegisterDeviceResponse
+import com.monghit.familytrack.data.remote.dto.*
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -52,4 +42,60 @@ interface ApiService {
     suspend fun deleteSafeZone(
         @Body request: DeleteSafeZoneRequest
     ): Response<DeleteSafeZoneResponse>
+
+    @POST("api/family/create")
+    suspend fun createFamily(
+        @Body request: CreateFamilyRequest
+    ): Response<CreateFamilyResponse>
+
+    @POST("api/family/join")
+    suspend fun joinFamily(
+        @Body request: JoinFamilyRequest
+    ): Response<JoinFamilyResponse>
+
+    @POST("api/user/update-profile")
+    suspend fun updateProfile(
+        @Body request: UpdateProfileRequest
+    ): Response<UpdateProfileResponse>
+
+    @POST("api/user/profile")
+    suspend fun getProfile(
+        @Body request: GetProfileRequest
+    ): Response<GetProfileResponse>
+
+    @POST("api/quick-message")
+    suspend fun sendQuickMessage(
+        @Body request: QuickMessageRequest
+    ): Response<Unit>
+
+    @POST("api/emergency")
+    suspend fun sendEmergency(
+        @Body request: EmergencyRequest
+    ): Response<EmergencyResponse>
+
+    @GET("api/locations/history")
+    suspend fun getLocationHistory(
+        @Query("userId") userId: Int,
+        @Query("date") date: String
+    ): Response<LocationHistoryResponse>
+
+    @POST("api/chat/send")
+    suspend fun sendChatMessage(
+        @Body request: ChatSendRequest
+    ): Response<ChatSendResponse>
+
+    @POST("api/chat/messages")
+    suspend fun getChatMessages(
+        @Body request: ChatMessagesRequest
+    ): Response<ChatMessagesResponse>
+
+    @POST("api/photos/send")
+    suspend fun sendPhoto(
+        @Body request: PhotoSendRequest
+    ): Response<PhotoSendResponse>
+
+    @POST("api/photos/list")
+    suspend fun getPhotoList(
+        @Body request: PhotoListRequest
+    ): Response<PhotoListResponse>
 }

@@ -4,7 +4,9 @@ data class FamilyMember(
     val user: User,
     val device: Device?,
     val lastLocation: Location?,
-    val isOnline: Boolean
+    val isOnline: Boolean,
+    val batteryLevel: Int? = null,
+    val isCharging: Boolean? = null
 ) {
     val displayName: String get() = user.name
     val lastSeenFormatted: String get() = formatLastSeen(device?.lastSeen)

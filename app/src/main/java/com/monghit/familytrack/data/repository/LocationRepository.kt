@@ -1,8 +1,10 @@
 package com.monghit.familytrack.data.repository
 
 import com.monghit.familytrack.data.remote.ApiService
+import com.monghit.familytrack.data.remote.dto.CreateFamilyRequest
 import com.monghit.familytrack.data.remote.dto.CreateSafeZoneRequest
 import com.monghit.familytrack.data.remote.dto.DeleteSafeZoneRequest
+import com.monghit.familytrack.data.remote.dto.JoinFamilyRequest
 import com.monghit.familytrack.data.remote.dto.LocationUpdateRequest
 import com.monghit.familytrack.data.remote.dto.ManualNotifyRequest
 import com.monghit.familytrack.data.remote.dto.RegisterDeviceRequest
@@ -48,7 +50,11 @@ class LocationRepository @Inject constructor(
         }
     }
 
-    suspend fun sendLocation(location: Location): Result<Boolean> {
+    suspend fun sendLocation(
+        location: Location,
+        batteryLevel: Int = -1,
+        isCharging: Boolean = false
+    ): Result<Boolean> {
         return try {
             val deviceToken = settingsRepository.deviceToken.first()
             val userId = settingsRepository.userId.first()
@@ -59,7 +65,9 @@ class LocationRepository @Inject constructor(
                 latitude = location.latitude,
                 longitude = location.longitude,
                 accuracy = location.accuracy,
-                timestamp = location.timestamp
+                timestamp = location.timestamp,
+                batteryLevel = if (batteryLevel >= 0) batteryLevel else null,
+                isCharging = if (batteryLevel >= 0) isCharging else null
             )
 
             val response = apiService.updateLocation(request)
@@ -118,7 +126,9 @@ class LocationRepository @Inject constructor(
                                 timestamp = System.currentTimeMillis()
                             )
                         } else null,
-                        isOnline = dto.isOnline
+                        isOnline = dto.isOnline,
+                        batteryLevel = dto.batteryLevel,
+                        isCharging = dto.isCharging
                     )
                 }
                 val safeZones = body.safeZones.map { dto ->
@@ -212,6 +222,53 @@ class LocationRepository @Inject constructor(
             }
         } catch (e: Exception) {
             Timber.e(e, "Error deleting safe zone")
+            Result.failure(e)
+        }
+    }
+
+    suspend fun createFamily(familyName: String, userName: String): Result<Triple<Int, Int, String>> {
+        return try {
+            val request = CreateFamilyRequest(familyName = familyName, userName = userName)
+            val response = apiService.createFamily(request)
+            if (response.isSuccessful && response.body() != null) {
+                val body = response.body()!!
+                settingsRepository.setUserId(body.userId)
+                settingsRepository.setUserName(userName)
+                settingsRepository.setFamilyId(body.familyId)
+                settingsRepository.setFamilyName(body.familyName)
+                settingsRepository.setInviteCode(body.inviteCode)
+                settingsRepository.setUserRole(body.role)
+                Result.success(Triple(body.userId, body.familyId, body.inviteCode))
+            } else {
+                Result.failure(Exception("Failed to create family: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error creating family")
+            Result.failure(e)
+        }
+    }
+
+    suspend fun joinFamily(inviteCode: String, userName: String): Result<Pair<Int, Int>> {
+        return try {
+            val request = JoinFamilyRequest(inviteCode = inviteCode, userName = userName)
+            val response = apiService.joinFamily(request)
+            if (response.isSuccessful && response.body() != null) {
+                val body = response.body()!!
+                if (body.success) {
+                    settingsRepository.setUserId(body.userId)
+                    settingsRepository.setUserName(userName)
+                    settingsRepository.setFamilyId(body.familyId)
+                    settingsRepository.setFamilyName(body.familyName)
+                    settingsRepository.setUserRole(body.role)
+                    Result.success(Pair(body.userId, body.familyId))
+                } else {
+                    Result.failure(Exception("Invalid invite code"))
+                }
+            } else {
+                Result.failure(Exception("Invalid invite code"))
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error joining family")
             Result.failure(e)
         }
     }

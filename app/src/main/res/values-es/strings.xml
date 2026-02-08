@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FamilyTrack</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Inicio</string>
+    <string name="nav_map">Mapa</string>
+    <string name="nav_family">Familia</string>
+    <string name="nav_settings">Ajustes</string>
+
+    <!-- Home Screen -->
+    <string name="home_title">Mi Ubicación</string>
+    <string name="home_status_active">Activo</string>
+    <string name="home_status_inactive">Inactivo</string>
+    <string name="home_sharing_location">Compartiendo ubicación</string>
+    <string name="home_not_sharing">Ubicación pausada</string>
+    <string name="home_last_update">Última actualización: %1$s</string>
+    <string name="home_interval">Intervalo: %1$d min</string>
+    <string name="home_quick_messages">Mensajes rápidos</string>
+    <string name="home_sos_title">Enviar SOS</string>
+    <string name="home_sos_confirm">Se enviará una alerta de emergencia a todos los miembros de tu familia. ¿Continuar?</string>
+    <string name="home_sos_send">Enviar SOS</string>
+    <string name="home_sos_sent">SOS enviado a tu familia</string>
+    <string name="home_sos_error">Error al enviar SOS</string>
+    <string name="home_message_sent">Mensaje enviado</string>
+    <string name="home_message_error">Error al enviar mensaje</string>
+
+    <!-- Quick Messages -->
+    <string name="quick_msg_im_fine">Estoy bien</string>
+    <string name="quick_msg_going_home">Voy para casa</string>
+    <string name="quick_msg_arriving">Estoy llegando</string>
+    <string name="quick_msg_call_me">Llámame</string>
+    <string name="quick_msg_will_be_late">Voy a tardar</string>
+
+    <!-- Map Screen -->
+    <string name="map_title">Mapa Familiar</string>
+    <string name="map_loading">Cargando ubicaciones…</string>
+    <string name="map_no_locations">Sin ubicaciones disponibles</string>
+
+    <!-- Family Screen -->
+    <string name="family_title">Mi Familia</string>
+    <string name="family_member_online">En línea</string>
+    <string name="family_member_offline">Sin conexión</string>
+    <string name="family_member_last_seen">Visto: %1$s</string>
+    <string name="family_add_member">Añadir miembro</string>
+    <string name="family_empty">No hay miembros registrados</string>
+    <string name="family_notify_sent">Notificación enviada a %1$s</string>
+    <string name="family_role_admin">Admin</string>
+    <string name="family_role_monitor">Monitor</string>
+    <string name="family_role_monitored">Monitoreado</string>
+    <string name="family_notify">Notificar</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_location">Ubicación</string>
+    <string name="settings_location_enabled">Compartir ubicación</string>
+    <string name="settings_location_interval">Intervalo de actualización</string>
+    <string name="settings_notifications">Notificaciones</string>
+    <string name="settings_notifications_enabled">Recibir alertas</string>
+    <string name="settings_notifications_sound">Sonido</string>
+    <string name="settings_notifications_vibrate">Vibración</string>
+    <string name="settings_appearance">Apariencia</string>
+    <string name="settings_theme">Tema</string>
+    <string name="settings_theme_system">Sistema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Oscuro</string>
+    <string name="settings_security">Seguridad</string>
+    <string name="settings_pin_lock">Bloqueo con PIN</string>
+    <string name="settings_biometric">Desbloqueo biométrico</string>
+    <string name="settings_manage_permissions">Gestionar permisos</string>
+    <string name="settings_account">Cuenta</string>
+    <string name="settings_device_name">Nombre del dispositivo</string>
+    <string name="settings_user_name">Tu nombre</string>
+    <string name="settings_edit_profile">Editar perfil</string>
+    <string name="settings_family_chat">Chat familiar</string>
+    <string name="settings_logout">Cerrar sesión</string>
+    <string name="settings_about">Acerca de</string>
+    <string name="settings_version">Versión %1$s</string>
+    <string name="settings_interval_value">%1$d min</string>
+    <string name="settings_device_info">Dispositivo</string>
+    <string name="settings_device_id">ID dispositivo: %1$d</string>
+    <string name="settings_user_id">ID usuario: %1$d</string>
+    <string name="settings_registered">Registrado: %1$s</string>
+    <string name="settings_last_update">Última ubicación: %1$s</string>
+    <string name="settings_token">Token FCM</string>
+    <string name="settings_actions">Acciones</string>
+    <string name="settings_send_location_now">Enviar ubicación ahora</string>
+    <string name="settings_test_notification">Probar notificación</string>
+    <string name="settings_yes">Sí</string>
+    <string name="settings_no">No</string>
+    <string name="settings_never">Nunca</string>
+
+    <!-- Profile -->
+    <string name="profile_title">Mi Perfil</string>
+    <string name="profile_name">Nombre</string>
+    <string name="profile_role">Rol</string>
+    <string name="profile_family">Familia</string>
+    <string name="profile_invite_code">Código de invitación</string>
+    <string name="profile_save">Guardar</string>
+    <string name="profile_saved">Perfil guardado</string>
+    <string name="profile_copy">Copiar</string>
+
+    <!-- Chat -->
+    <string name="chat_title">Chat Familiar</string>
+    <string name="chat_send">Enviar</string>
+    <string name="chat_hint">Escribe un mensaje…</string>
+    <string name="chat_empty">No hay mensajes aún</string>
+
+    <!-- Photos -->
+    <string name="photos_title">Fotos</string>
+    <string name="photos_empty">No hay fotos</string>
+    <string name="photos_sent">Foto enviada</string>
+    <string name="photos_send_error">Error al enviar foto</string>
+
+    <!-- Route History -->
+    <string name="route_history_title">Historial de rutas</string>
+    <string name="route_history_prev_day">Día anterior</string>
+    <string name="route_history_next_day">Día siguiente</string>
+    <string name="route_history_points">%1$d puntos registrados</string>
+    <string name="route_history_empty">No hay datos de ruta para este día</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">Saltar</string>
+    <string name="onboarding_next">Siguiente</string>
+    <string name="onboarding_start">Comenzar</string>
+    <string name="onboarding_title_1">Tu familia, siempre cerca</string>
+    <string name="onboarding_desc_1">Mantén a tu familia conectada y segura en todo momento</string>
+    <string name="onboarding_title_2">Ubicación en tiempo real</string>
+    <string name="onboarding_desc_2">Comparte tu ubicación y conoce dónde están tus seres queridos</string>
+    <string name="onboarding_title_3">Privacidad garantizada</string>
+    <string name="onboarding_desc_3">Solo tu familia puede ver tu ubicación. Tus datos están protegidos</string>
+
+    <!-- Family Setup -->
+    <string name="family_setup_title">Configura tu familia</string>
+    <string name="family_setup_create">Crear familia</string>
+    <string name="family_setup_join">Unirme a una familia</string>
+    <string name="family_setup_create_title">Crear nueva familia</string>
+    <string name="family_setup_join_title">Unirme a familia</string>
+    <string name="family_setup_family_name">Nombre de la familia</string>
+    <string name="family_setup_your_name">Tu nombre</string>
+    <string name="family_setup_invite_code">Código de invitación</string>
+    <string name="family_setup_admin_note">Serás el administrador de tu familia</string>
+    <string name="family_setup_create_btn">Crear familia</string>
+    <string name="family_setup_join_btn">Unirme</string>
+    <string name="family_setup_success_title">¡Familia creada!</string>
+    <string name="family_setup_share_code">Comparte este código con tu familia:</string>
+    <string name="family_setup_continue">Continuar</string>
+
+    <!-- Permissions -->
+    <string name="permissions_title">Permisos</string>
+    <string name="permissions_location">Ubicación</string>
+    <string name="permissions_notifications">Notificaciones</string>
+    <string name="permissions_background_location">Ubicación en segundo plano</string>
+    <string name="permissions_battery_optimization">Optimización de batería</string>
+    <string name="permissions_granted">Concedido</string>
+    <string name="permissions_denied">Denegado</string>
+    <string name="permissions_grant">Conceder</string>
+    <string name="permissions_open_settings">Abrir ajustes</string>
+    <string name="permissions_continue">Continuar</string>
+
+    <!-- PIN -->
+    <string name="pin_title">Bloqueo PIN</string>
+    <string name="pin_enter">Introduce tu PIN</string>
+    <string name="pin_create">Crea un PIN de 4 dígitos</string>
+    <string name="pin_confirm">Confirma tu PIN</string>
+    <string name="pin_mismatch">Los PINs no coinciden. Inténtalo de nuevo.</string>
+    <string name="pin_biometric">Biometría</string>
+    <string name="pin_delete">Borrar</string>
+
+    <!-- Safe Zones -->
+    <string name="safe_zones_title">Zonas Seguras</string>
+    <string name="safe_zones_empty">No hay zonas seguras configuradas</string>
+    <string name="safe_zone_add">Añadir zona</string>
+    <string name="safe_zone_name">Nombre de la zona</string>
+    <string name="safe_zone_lat">Latitud</string>
+    <string name="safe_zone_lng">Longitud</string>
+    <string name="safe_zone_radius">Radio (metros)</string>
+    <string name="safe_zone_radius_value">%1$d m</string>
+    <string name="safe_zone_delete">Eliminar zona</string>
+    <string name="safe_zone_delete_confirm">¿Eliminar la zona \"%1$s\"?</string>
+
+    <!-- Alerts -->
+    <string name="alert_zone_exit_title">Salida de zona segura</string>
+    <string name="alert_zone_exit_body">%1$s ha salido de %2$s</string>
+    <string name="alert_zone_entry_title">Entrada a zona segura</string>
+    <string name="alert_zone_entry_body">%1$s ha llegado a %2$s</string>
+    <string name="alert_offline_title">Dispositivo sin conexión</string>
+    <string name="alert_offline_body">%1$s no ha reportado ubicación en las últimas 24 horas</string>
+
+    <!-- Permissions Dialog -->
+    <string name="permission_location_title">Permiso de ubicación</string>
+    <string name="permission_location_rationale">FamilyTrack necesita acceso a tu ubicación para compartirla con tu familia.</string>
+    <string name="permission_location_background_title">Ubicación en segundo plano</string>
+    <string name="permission_location_background_rationale">Para compartir tu ubicación incluso cuando la app está cerrada, necesitamos permiso de ubicación en segundo plano.</string>
+    <string name="permission_notification_title">Permiso de notificaciones</string>
+    <string name="permission_notification_rationale">Necesitamos permiso para enviarte alertas importantes sobre tu familia.</string>
+    <string name="permission_grant">Conceder</string>
+    <string name="permission_deny">Denegar</string>
+    <string name="permission_settings">Ir a Ajustes</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_alerts">Alertas familiares</string>
+    <string name="notification_channel_alerts_desc">Notificaciones sobre la ubicación de tu familia</string>
+    <string name="notification_channel_service">Servicio de ubicación</string>
+    <string name="notification_channel_service_desc">Notificación del servicio en segundo plano</string>
+    <string name="notification_service_title">FamilyTrack activo</string>
+    <string name="notification_service_text">Compartiendo tu ubicación con la familia</string>
+
+    <!-- Errors -->
+    <string name="error_generic">Ha ocurrido un error</string>
+    <string name="error_network">Error de conexión</string>
+    <string name="error_location">No se pudo obtener la ubicación</string>
+    <string name="error_registration">Error al registrar dispositivo</string>
+    <string name="error_connection">Error de conexión</string>
+
+    <!-- Actions -->
+    <string name="action_retry">Reintentar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_confirm">Confirmar</string>
+    <string name="action_back">Volver</string>
+
+    <!-- Time -->
+    <string name="time_just_now">Justo ahora</string>
+    <string name="time_minutes_ago">Hace %1$d min</string>
+    <string name="time_hours_ago">Hace %1$d h</string>
+    <string name="time_days_ago">Hace %1$d días</string>
+    <string name="time_never">Nunca</string>
+
+    <!-- Splash -->
+    <string name="splash_tagline">Tu familia, siempre cerca</string>
+</resources>

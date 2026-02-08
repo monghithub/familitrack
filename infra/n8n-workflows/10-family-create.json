@@ -1,0 +1,98 @@
+{
+  "name": "FamilyTrack - Create Family",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "api/family/create",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-create-family",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "webhookId": "create-family-wh"
+    },
+    {
+      "parameters": {
+        "jsCode": "const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';\nlet code = '';\nfor (let i = 0; i < 6; i++) {\n  code += chars.charAt(Math.floor(Math.random() * chars.length));\n}\nreturn [{ json: { familyName: $input.first().json.familyName, userName: $input.first().json.userName, inviteCode: code } }];"
+      },
+      "id": "code-generate-invite",
+      "name": "Generate Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH new_family AS (INSERT INTO families (name, invite_code, is_active) VALUES ('{{ $json.familyName }}', '{{ $json.inviteCode }}', true) RETURNING family_id, name, invite_code), new_user AS (INSERT INTO users (name, family_id, role) SELECT '{{ $json.userName }}', (SELECT family_id FROM new_family), 'admin' RETURNING user_id, name, role) SELECT nf.family_id, nf.name, nf.invite_code, nu.user_id, nu.role FROM new_family nf CROSS JOIN new_user nu",
+        "options": {}
+      },
+      "id": "postgres-create-all",
+      "name": "Create Family & User",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [660, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $input.first().json;\nreturn [{\n  json: {\n    success: true,\n    userId: row.user_id,\n    familyId: row.family_id,\n    familyName: row.name,\n    inviteCode: row.invite_code,\n    role: row.role\n  }\n}];"
+      },
+      "id": "code-format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 201
+        }
+      },
+      "id": "response-create-family",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1100, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Generate Code", "type": "main", "index": 0 }]
+      ]
+    },
+    "Generate Code": {
+      "main": [
+        [{ "node": "Create Family & User", "type": "main", "index": 0 }]
+      ]
+    },
+    "Create Family & User": {
+      "main": [
+        [{ "node": "Format Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [{ "node": "Response", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

@@ -132,6 +132,10 @@ dependencies {
     // Permissions
     implementation(libs.accompanist.permissions)
 
+    // Biometric & Security
+    implementation(libs.biometric)
+    implementation(libs.security.crypto)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

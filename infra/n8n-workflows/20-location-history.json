@@ -1,0 +1,83 @@
+{
+  "name": "FamilyTrack - Get Location History",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "api/locations/history",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-location-history",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "webhookId": "location-history-wh"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT l.location_id, l.device_id, d.user_id, u.name as user_name, l.latitude, l.longitude, l.accuracy, l.timestamp FROM locations l JOIN devices d ON l.device_id = d.device_id JOIN users u ON d.user_id = u.user_id WHERE u.family_id = {{ $json.familyId }} AND l.timestamp >= NOW() - INTERVAL '{{ $json.daysBack || 7 }} days' ORDER BY l.timestamp DESC LIMIT {{ $json.limit || 500 }}",
+        "options": {}
+      },
+      "id": "postgres-get-history",
+      "name": "Get Location History",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [440, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const locations = $input.all().map(item => {\n  const l = item.json;\n  return {\n    locationId: l.location_id,\n    deviceId: l.device_id,\n    userId: l.user_id,\n    userName: l.user_name,\n    latitude: parseFloat(l.latitude),\n    longitude: parseFloat(l.longitude),\n    accuracy: l.accuracy,\n    timestamp: l.timestamp\n  };\n});\n\nreturn [{ json: { success: true, locations: locations, count: locations.length } }];"
+      },
+      "id": "code-format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "response-location-history",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Get Location History", "type": "main", "index": 0 }]
+      ]
+    },
+    "Get Location History": {
+      "main": [
+        [{ "node": "Format Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [{ "node": "Response", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

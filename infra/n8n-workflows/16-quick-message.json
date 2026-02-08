@@ -1,0 +1,83 @@
+{
+  "name": "FamilyTrack - Send Quick Message",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "api/quick-message",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-quick-message",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "webhookId": "quick-message-wh"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO quick_messages (family_id, sender_id, message_key, is_active) VALUES ({{ $json.familyId }}, {{ $json.senderId }}, '{{ $json.messageKey }}', true) RETURNING quick_message_id, family_id, sender_id, message_key, created_at",
+        "options": {}
+      },
+      "id": "postgres-insert-quick",
+      "name": "Insert Quick Message",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [440, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $input.first().json;\nreturn [{\n  json: {\n    success: true,\n    quickMessageId: row.quick_message_id,\n    familyId: row.family_id,\n    senderId: row.sender_id,\n    messageKey: row.message_key,\n    createdAt: row.created_at\n  }\n}];"
+      },
+      "id": "code-format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 201
+        }
+      },
+      "id": "response-quick-message",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Insert Quick Message", "type": "main", "index": 0 }]
+      ]
+    },
+    "Insert Quick Message": {
+      "main": [
+        [{ "node": "Format Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [{ "node": "Response", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

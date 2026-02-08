@@ -1,0 +1,83 @@
+{
+  "name": "FamilyTrack - Join Family",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "api/family/join",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-join-family",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "webhookId": "join-family-wh"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH family_found AS (SELECT family_id, name FROM families WHERE invite_code = '{{ $json.inviteCode }}' AND is_active = true), new_user AS (INSERT INTO users (name, family_id, role) SELECT '{{ $json.userName }}', (SELECT family_id FROM family_found), 'monitored' RETURNING user_id, name, role) SELECT ff.family_id, ff.name, nu.user_id, nu.role FROM family_found ff CROSS JOIN new_user nu",
+        "options": {}
+      },
+      "id": "postgres-join-family",
+      "name": "Join Family",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [440, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $input.first().json;\nreturn [{\n  json: {\n    success: true,\n    userId: row.user_id,\n    familyId: row.family_id,\n    familyName: row.name,\n    role: row.role\n  }\n}];"
+      },
+      "id": "code-format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 201
+        }
+      },
+      "id": "response-join-family",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Join Family", "type": "main", "index": 0 }]
+      ]
+    },
+    "Join Family": {
+      "main": [
+        [{ "node": "Format Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [{ "node": "Response", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

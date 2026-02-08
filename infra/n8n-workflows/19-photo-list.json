@@ -1,0 +1,83 @@
+{
+  "name": "FamilyTrack - Get Photos",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "api/photos/list",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-photo-list",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "webhookId": "photo-list-wh"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT p.photo_id, p.family_id, p.user_id, u.name as user_name, p.photo_url, p.caption, p.created_at FROM photos p JOIN users u ON p.user_id = u.user_id WHERE p.family_id = {{ $json.familyId }} AND p.is_active = true ORDER BY p.created_at DESC LIMIT {{ $json.limit || 50 }}",
+        "options": {}
+      },
+      "id": "postgres-get-photos",
+      "name": "Get Photos",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [440, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const photos = $input.all().map(item => {\n  const p = item.json;\n  return {\n    photoId: p.photo_id,\n    familyId: p.family_id,\n    userId: p.user_id,\n    userName: p.user_name,\n    photoUrl: p.photo_url,\n    caption: p.caption,\n    createdAt: p.created_at\n  };\n});\n\nreturn [{ json: { success: true, photos: photos, count: photos.length } }];"
+      },
+      "id": "code-format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "response-photo-list",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Get Photos", "type": "main", "index": 0 }]
+      ]
+    },
+    "Get Photos": {
+      "main": [
+        [{ "node": "Format Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [{ "node": "Response", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

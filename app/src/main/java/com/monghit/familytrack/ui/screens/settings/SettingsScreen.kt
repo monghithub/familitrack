@@ -11,11 +11,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.Brightness6
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material3.Button
@@ -49,6 +53,9 @@ import com.monghit.familytrack.R
 
 @Composable
 fun SettingsScreen(
+    onNavigateToProfile: () -> Unit = {},
+    onNavigateToChat: () -> Unit = {},
+    onNavigateToPermissions: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -107,6 +114,88 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Appearance Section
+            SettingsSection(
+                title = stringResource(R.string.settings_appearance),
+                icon = Icons.Default.Brightness6
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_theme),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                val options = listOf(
+                    "system" to stringResource(R.string.settings_theme_system),
+                    "light" to stringResource(R.string.settings_theme_light),
+                    "dark" to stringResource(R.string.settings_theme_dark)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+                ) {
+                    options.forEach { (value, label) ->
+                        val selected = uiState.darkMode == value
+                        if (selected) {
+                            Button(
+                                onClick = {},
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(label)
+                            }
+                        } else {
+                            OutlinedButton(
+                                onClick = { viewModel.setDarkMode(value) },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(label)
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Security Section
+            SettingsSection(
+                title = stringResource(R.string.settings_security),
+                icon = Icons.Default.Lock
+            ) {
+                SettingsSwitchItem(
+                    title = stringResource(R.string.settings_pin_lock),
+                    checked = uiState.isPinSet,
+                    onCheckedChange = { enabled ->
+                        if (!enabled) {
+                            viewModel.togglePinEnabled(false)
+                        }
+                        // PIN creation is handled via PinScreen navigation
+                    }
+                )
+                if (uiState.isPinSet) {
+                    HorizontalDivider()
+                    SettingsSwitchItem(
+                        title = stringResource(R.string.settings_biometric),
+                        checked = uiState.isBiometricEnabled,
+                        onCheckedChange = viewModel::toggleBiometric
+                    )
+                }
+                HorizontalDivider()
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onNavigateToPermissions,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.settings_manage_permissions))
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             // Account Section
             SettingsSection(
                 title = stringResource(R.string.settings_account),
@@ -121,6 +210,36 @@ fun SettingsScreen(
                     title = stringResource(R.string.settings_device_name),
                     value = uiState.deviceName
                 )
+                HorizontalDivider()
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onNavigateToProfile,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 4.dp)
+                        )
+                        Text(stringResource(R.string.settings_edit_profile))
+                    }
+                    OutlinedButton(
+                        onClick = onNavigateToChat,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Chat,
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 4.dp)
+                        )
+                        Text(stringResource(R.string.settings_family_chat))
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -141,7 +260,7 @@ fun SettingsScreen(
                 )
                 HorizontalDivider()
                 SettingsTextItem(
-                    title = stringResource(R.string.settings_registered, if (uiState.isRegistered) "S\u00ed" else "No"),
+                    title = stringResource(R.string.settings_registered, if (uiState.isRegistered) stringResource(R.string.settings_yes) else stringResource(R.string.settings_no)),
                     value = ""
                 )
                 HorizontalDivider()

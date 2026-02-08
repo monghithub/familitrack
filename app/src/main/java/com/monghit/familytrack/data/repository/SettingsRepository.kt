@@ -32,6 +32,12 @@ class SettingsRepository @Inject constructor(
         val DEVICE_ID = intPreferencesKey("device_id")
         val IS_REGISTERED = booleanPreferencesKey("is_registered")
         val LAST_LOCATION_UPDATE = longPreferencesKey("last_location_update")
+        val FAMILY_ID = intPreferencesKey("family_id")
+        val FAMILY_NAME = stringPreferencesKey("family_name")
+        val INVITE_CODE = stringPreferencesKey("invite_code")
+        val USER_ROLE = stringPreferencesKey("user_role")
+        val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val DARK_MODE = stringPreferencesKey("dark_mode")
     }
 
     val isLocationEnabled: Flow<Boolean> = context.dataStore.data
@@ -82,6 +88,36 @@ class SettingsRepository @Inject constructor(
     val lastLocationUpdate: Flow<Long> = context.dataStore.data
         .map { preferences ->
             preferences[PreferencesKeys.LAST_LOCATION_UPDATE] ?: 0L
+        }
+
+    val familyId: Flow<Int> = context.dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.FAMILY_ID] ?: 0
+        }
+
+    val familyName: Flow<String> = context.dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.FAMILY_NAME] ?: ""
+        }
+
+    val inviteCode: Flow<String> = context.dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.INVITE_CODE] ?: ""
+        }
+
+    val userRole: Flow<String> = context.dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.USER_ROLE] ?: ""
+        }
+
+    val onboardingCompleted: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
+        }
+
+    val darkMode: Flow<String> = context.dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.DARK_MODE] ?: "system"
         }
 
     suspend fun setLocationEnabled(enabled: Boolean) {
@@ -141,6 +177,42 @@ class SettingsRepository @Inject constructor(
     suspend fun setLastLocationUpdate(timestamp: Long) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.LAST_LOCATION_UPDATE] = timestamp
+        }
+    }
+
+    suspend fun setFamilyId(id: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.FAMILY_ID] = id
+        }
+    }
+
+    suspend fun setFamilyName(name: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.FAMILY_NAME] = name
+        }
+    }
+
+    suspend fun setInviteCode(code: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.INVITE_CODE] = code
+        }
+    }
+
+    suspend fun setUserRole(role: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.USER_ROLE] = role
+        }
+    }
+
+    suspend fun setOnboardingCompleted(completed: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.ONBOARDING_COMPLETED] = completed
+        }
+    }
+
+    suspend fun setDarkMode(mode: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DARK_MODE] = mode
         }
     }
 

@@ -4,6 +4,9 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.messaging.FirebaseMessaging
+import com.monghit.familytrack.data.remote.ApiService
+import com.monghit.familytrack.data.remote.dto.EmergencyRequest
+import com.monghit.familytrack.data.remote.dto.QuickMessageRequest
 import com.monghit.familytrack.data.repository.LocationRepository
 import com.monghit.familytrack.data.repository.SettingsRepository
 import com.monghit.familytrack.services.LocationForegroundService
@@ -26,14 +29,17 @@ data class HomeUiState(
     val intervalMinutes: Int = 5,
     val lastUpdateFormatted: String = "Nunca",
     val isRegistered: Boolean = false,
-    val deviceToken: String = ""
+    val deviceToken: String = "",
+    val isSendingSos: Boolean = false,
+    val sosMessage: String? = null
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val application: Application,
     private val settingsRepository: SettingsRepository,
-    private val locationRepository: LocationRepository
+    private val locationRepository: LocationRepository,
+    private val apiService: ApiService
 ) : ViewModel() {
 
     private val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
@@ -122,6 +128,52 @@ class HomeViewModel @Inject constructor(
 
             if (_uiState.value.isLocationEnabled) {
                 LocationForegroundService.updateInterval(application, seconds)
+            }
+        }
+    }
+
+    fun sendSos(latitude: Double, longitude: Double) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSendingSos = true) }
+            try {
+                val userId = settingsRepository.userId.first()
+                val response = apiService.sendEmergency(
+                    EmergencyRequest(userId = userId, latitude = latitude, longitude = longitude)
+                )
+                if (response.isSuccessful) {
+                    _uiState.update { it.copy(isSendingSos = false, sosMessage = "SOS enviado a tu familia") }
+                } else {
+                    _uiState.update { it.copy(isSendingSos = false, sosMessage = "Error al enviar SOS") }
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error sending SOS")
+                _uiState.update { it.copy(isSendingSos = false, sosMessage = "Error de conexion") }
+            }
+        }
+    }
+
+    fun clearSosMessage() {
+        _uiState.update { it.copy(sosMessage = null) }
+    }
+
+    fun sendQuickMessage(message: String) {
+        viewModelScope.launch {
+            try {
+                val userId = settingsRepository.userId.first()
+                val response = apiService.sendQuickMessage(
+                    QuickMessageRequest(
+                        fromUserId = userId,
+                        message = message,
+                        latitude = 0.0,
+                        longitude = 0.0
+                    )
+                )
+                if (response.isSuccessful) {
+                    _uiState.update { it.copy(sosMessage = "Mensaje enviado") }
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error sending quick message")
+                _uiState.update { it.copy(sosMessage = "Error al enviar mensaje") }
             }
         }
     }
