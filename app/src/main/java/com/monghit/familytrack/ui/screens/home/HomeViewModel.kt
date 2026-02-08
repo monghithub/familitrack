@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.messaging.FirebaseMessaging
 import com.monghit.familytrack.data.remote.ApiService
 import com.monghit.familytrack.data.remote.dto.EmergencyRequest
+import com.monghit.familytrack.data.remote.dto.QuickMessageRequest
 import com.monghit.familytrack.data.repository.LocationRepository
 import com.monghit.familytrack.data.repository.SettingsRepository
 import com.monghit.familytrack.services.LocationForegroundService
@@ -153,5 +154,27 @@ class HomeViewModel @Inject constructor(
 
     fun clearSosMessage() {
         _uiState.update { it.copy(sosMessage = null) }
+    }
+
+    fun sendQuickMessage(message: String) {
+        viewModelScope.launch {
+            try {
+                val userId = settingsRepository.userId.first()
+                val response = apiService.sendQuickMessage(
+                    QuickMessageRequest(
+                        fromUserId = userId,
+                        message = message,
+                        latitude = 0.0,
+                        longitude = 0.0
+                    )
+                )
+                if (response.isSuccessful) {
+                    _uiState.update { it.copy(sosMessage = "Mensaje enviado") }
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error sending quick message")
+                _uiState.update { it.copy(sosMessage = "Error al enviar mensaje") }
+            }
+        }
     }
 }
