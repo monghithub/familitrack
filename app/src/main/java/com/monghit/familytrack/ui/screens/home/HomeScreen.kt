@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,16 +15,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.LocationOff
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +53,15 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showPermissionDialog by remember { mutableStateOf(false) }
+    var showSosDialog by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(uiState.sosMessage) {
+        uiState.sosMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearSosMessage()
+        }
+    }
 
     val permissions = buildList {
         add(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -88,39 +103,82 @@ fun HomeScreen(
         )
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = stringResource(R.string.home_title),
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 24.dp)
+    if (showSosDialog) {
+        AlertDialog(
+            onDismissRequest = { showSosDialog = false },
+            title = { Text("Enviar SOS") },
+            text = { Text("Se enviara una alerta de emergencia a todos los miembros de tu familia. Continuar?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showSosDialog = false
+                        viewModel.sendSos(40.4168, -3.7038) // Default coords, updated by location service
+                    },
+                    enabled = !uiState.isSendingSos
+                ) {
+                    Text("Enviar SOS", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSosDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
         )
+    }
 
-        // Status Card
-        StatusCard(
-            isLocationEnabled = uiState.isLocationEnabled,
-            lastUpdate = uiState.lastUpdateFormatted,
-            intervalMinutes = uiState.intervalMinutes
-        )
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(R.string.home_title),
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
 
-        Spacer(modifier = Modifier.height(24.dp))
+            // Status Card
+            StatusCard(
+                isLocationEnabled = uiState.isLocationEnabled,
+                lastUpdate = uiState.lastUpdateFormatted,
+                intervalMinutes = uiState.intervalMinutes
+            )
 
-        // Location Toggle
-        LocationToggle(
-            isEnabled = uiState.isLocationEnabled,
-            onToggle = onLocationToggle
-        )
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Spacer(modifier = Modifier.height(24.dp))
+            // Location Toggle
+            LocationToggle(
+                isEnabled = uiState.isLocationEnabled,
+                onToggle = onLocationToggle
+            )
 
-        // Interval Slider
-        IntervalSlider(
-            currentInterval = uiState.intervalMinutes,
-            onIntervalChange = viewModel::updateInterval
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Interval Slider
+            IntervalSlider(
+                currentInterval = uiState.intervalMinutes,
+                onIntervalChange = viewModel::updateInterval
+            )
+        }
+
+        ExtendedFloatingActionButton(
+            onClick = { showSosDialog = true },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            containerColor = MaterialTheme.colorScheme.error,
+            contentColor = MaterialTheme.colorScheme.onError
+        ) {
+            Icon(Icons.Filled.Warning, contentDescription = null)
+            Text("SOS", modifier = Modifier.padding(start = 8.dp))
+        }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
         )
     }
 }
