@@ -145,3 +145,120 @@ data class JoinFamilyResponse(
     @SerializedName("familyName") val familyName: String,
     @SerializedName("role") val role: String
 )
+
+// Profile
+data class UpdateProfileRequest(
+    @SerializedName("userId") val userId: Int,
+    @SerializedName("name") val name: String,
+    @SerializedName("avatar") val avatar: String? = null
+)
+
+data class UpdateProfileResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("userId") val userId: Int,
+    @SerializedName("name") val name: String
+)
+
+data class GetProfileRequest(
+    @SerializedName("userId") val userId: Int
+)
+
+data class GetProfileResponse(
+    @SerializedName("userId") val userId: Int,
+    @SerializedName("name") val name: String,
+    @SerializedName("role") val role: String,
+    @SerializedName("avatar") val avatar: String? = null,
+    @SerializedName("familyName") val familyName: String? = null,
+    @SerializedName("inviteCode") val inviteCode: String? = null
+)
+
+// Quick Message
+data class QuickMessageRequest(
+    @SerializedName("fromUserId") val fromUserId: Int,
+    @SerializedName("message") val message: String,
+    @SerializedName("latitude") val latitude: Double,
+    @SerializedName("longitude") val longitude: Double
+)
+
+// Emergency SOS
+data class EmergencyRequest(
+    @SerializedName("userId") val userId: Int,
+    @SerializedName("latitude") val latitude: Double,
+    @SerializedName("longitude") val longitude: Double
+)
+
+data class EmergencyResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("alertId") val alertId: Int? = null
+)
+
+// Location History
+data class LocationHistoryResponse(
+    @SerializedName("locations") val locations: List<LocationHistoryDto>
+)
+
+data class LocationHistoryDto(
+    @SerializedName("latitude") val latitude: Double,
+    @SerializedName("longitude") val longitude: Double,
+    @SerializedName("accuracy") val accuracy: Float? = null,
+    @SerializedName("timestamp") val timestamp: String? = null
+)
+
+// Chat
+data class ChatSendRequest(
+    @SerializedName("fromUserId") val fromUserId: Int,
+    @SerializedName("content") val content: String
+)
+
+data class ChatSendResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("messageId") val messageId: Int? = null
+)
+
+data class ChatMessagesRequest(
+    @SerializedName("familyId") val familyId: Int,
+    @SerializedName("limit") val limit: Int = 50
+)
+
+data class ChatMessagesResponse(
+    @SerializedName("messages") val messages: List<ChatMessageDto>
+)
+
+data class ChatMessageDto(
+    @SerializedName("id") val id: Int,
+    @SerializedName("content") val content: String,
+    @SerializedName("createdAt") val createdAt: String,
+    @SerializedName("userId") val userId: Int,
+    @SerializedName("userName") val userName: String,
+    @SerializedName("avatar") val avatar: String? = null
+)
+
+// Photos
+data class PhotoSendRequest(
+    @SerializedName("fromUserId") val fromUserId: Int,
+    @SerializedName("toUserId") val toUserId: Int,
+    @SerializedName("imageData") val imageData: String,
+    @SerializedName("caption") val caption: String? = null
+)
+
+data class PhotoSendResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("photoId") val photoId: Int? = null
+)
+
+data class PhotoListRequest(
+    @SerializedName("userId") val userId: Int
+)
+
+data class PhotoListResponse(
+    @SerializedName("photos") val photos: List<PhotoDto>
+)
+
+data class PhotoDto(
+    @SerializedName("id") val id: Int,
+    @SerializedName("fromUserId") val fromUserId: Int,
+    @SerializedName("fromName") val fromName: String,
+    @SerializedName("toUserId") val toUserId: Int,
+    @SerializedName("caption") val caption: String? = null,
+    @SerializedName("createdAt") val createdAt: String
+)

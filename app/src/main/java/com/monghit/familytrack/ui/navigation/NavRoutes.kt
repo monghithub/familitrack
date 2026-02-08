@@ -9,4 +9,6 @@ sealed class NavRoutes(val route: String) {
     data object Permissions : NavRoutes("permissions")
     data object FamilySetup : NavRoutes("family_setup")
     data object PinLock : NavRoutes("pin_lock")
+    data object Profile : NavRoutes("profile")
+    data object Chat : NavRoutes("chat")
 }
