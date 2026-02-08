@@ -16,6 +16,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -27,7 +28,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.monghit.familytrack.R
+import com.monghit.familytrack.data.repository.SettingsRepository
 import com.monghit.familytrack.ui.screens.family.FamilyScreen
+import com.monghit.familytrack.ui.screens.familysetup.FamilySetupScreen
 import com.monghit.familytrack.ui.screens.home.HomeScreen
 import com.monghit.familytrack.ui.screens.map.MapScreen
 import com.monghit.familytrack.ui.screens.safezones.SafeZonesScreen
@@ -67,46 +70,68 @@ val bottomNavItems = listOf(
     )
 )
 
+private val screensWithBottomBar = setOf(
+    NavRoutes.Home.route,
+    NavRoutes.Map.route,
+    NavRoutes.Family.route,
+    NavRoutes.Settings.route
+)
+
 @Composable
-fun FamilyTrackNavHost() {
+fun FamilyTrackNavHost(settingsRepository: SettingsRepository) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val familyId by settingsRepository.familyId.collectAsState(initial = 0)
+
+    val startDestination = if (familyId > 0) NavRoutes.Home.route else NavRoutes.FamilySetup.route
+    val showBottomBar = currentDestination?.route in screensWithBottomBar
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                bottomNavItems.forEach { item ->
-                    val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
+            if (showBottomBar) {
+                NavigationBar {
+                    bottomNavItems.forEach { item ->
+                        val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
 
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                contentDescription = stringResource(item.titleResId)
-                            )
-                        },
-                        label = { Text(stringResource(item.titleResId)) },
-                        selected = selected,
-                        onClick = {
-                            navController.navigate(item.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+                        NavigationBarItem(
+                            icon = {
+                                Icon(
+                                    imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                                    contentDescription = stringResource(item.titleResId)
+                                )
+                            },
+                            label = { Text(stringResource(item.titleResId)) },
+                            selected = selected,
+                            onClick = {
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = NavRoutes.Home.route,
+            startDestination = startDestination,
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable(NavRoutes.FamilySetup.route) {
+                FamilySetupScreen(
+                    onSetupComplete = {
+                        navController.navigate(NavRoutes.Home.route) {
+                            popUpTo(NavRoutes.FamilySetup.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
             composable(NavRoutes.Home.route) {
                 HomeScreen()
             }

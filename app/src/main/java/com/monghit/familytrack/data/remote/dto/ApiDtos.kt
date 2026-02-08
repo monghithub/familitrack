@@ -117,3 +117,31 @@ data class DeleteSafeZoneResponse(
     @SerializedName("zoneId") val zoneId: Int,
     @SerializedName("name") val name: String
 )
+
+// Family Registration
+data class CreateFamilyRequest(
+    @SerializedName("familyName") val familyName: String,
+    @SerializedName("userName") val userName: String
+)
+
+data class CreateFamilyResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("userId") val userId: Int,
+    @SerializedName("familyId") val familyId: Int,
+    @SerializedName("familyName") val familyName: String,
+    @SerializedName("inviteCode") val inviteCode: String,
+    @SerializedName("role") val role: String
+)
+
+data class JoinFamilyRequest(
+    @SerializedName("inviteCode") val inviteCode: String,
+    @SerializedName("userName") val userName: String
+)
+
+data class JoinFamilyResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("userId") val userId: Int,
+    @SerializedName("familyId") val familyId: Int,
+    @SerializedName("familyName") val familyName: String,
+    @SerializedName("role") val role: String
+)

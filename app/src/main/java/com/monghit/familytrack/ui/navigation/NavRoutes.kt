@@ -7,4 +7,5 @@ sealed class NavRoutes(val route: String) {
     data object Settings : NavRoutes("settings")
     data object SafeZones : NavRoutes("safe_zones")
     data object Permissions : NavRoutes("permissions")
+    data object FamilySetup : NavRoutes("family_setup")
 }
