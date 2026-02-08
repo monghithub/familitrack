@@ -12,7 +12,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Notifications
@@ -103,6 +105,33 @@ fun SettingsScreen(
                     checked = uiState.notificationsEnabled,
                     onCheckedChange = viewModel::toggleNotifications
                 )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Security Section
+            SettingsSection(
+                title = "Seguridad",
+                icon = Icons.Default.Lock
+            ) {
+                SettingsSwitchItem(
+                    title = "Bloqueo con PIN",
+                    checked = uiState.isPinSet,
+                    onCheckedChange = { enabled ->
+                        if (!enabled) {
+                            viewModel.togglePinEnabled(false)
+                        }
+                        // PIN creation is handled via PinScreen navigation
+                    }
+                )
+                if (uiState.isPinSet) {
+                    HorizontalDivider()
+                    SettingsSwitchItem(
+                        title = "Desbloqueo biométrico",
+                        checked = uiState.isBiometricEnabled,
+                        onCheckedChange = viewModel::toggleBiometric
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
