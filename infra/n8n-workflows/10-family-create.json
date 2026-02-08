@@ -1,0 +1,83 @@
+{
+  "name": "FamilyTrack - Create Family",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "api/family/create",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-family-create",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "webhookId": "family-create-wh"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO families (family_name, admin_user_id, is_active) VALUES ('{{ $json.familyName }}', {{ $json.adminUserId }}, true) RETURNING family_id, family_name, admin_user_id, created_at",
+        "options": {}
+      },
+      "id": "postgres-insert-family",
+      "name": "Insert Family",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [440, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $input.first().json;\nreturn [{\n  json: {\n    success: true,\n    familyId: row.family_id,\n    familyName: row.family_name,\n    adminUserId: row.admin_user_id,\n    createdAt: row.created_at\n  }\n}];"
+      },
+      "id": "code-format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 201
+        }
+      },
+      "id": "response-family-create",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Insert Family", "type": "main", "index": 0 }]
+      ]
+    },
+    "Insert Family": {
+      "main": [
+        [{ "node": "Format Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [{ "node": "Response", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

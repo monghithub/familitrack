@@ -1,0 +1,83 @@
+{
+  "name": "FamilyTrack - Send Chat Message",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "api/chat/send",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-chat-send",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "webhookId": "chat-send-wh"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO chat_messages (family_id, sender_id, message_text, is_read, is_active) VALUES ({{ $json.familyId }}, {{ $json.senderId }}, '{{ $json.messageText }}', false, true) RETURNING message_id, family_id, sender_id, message_text, created_at",
+        "options": {}
+      },
+      "id": "postgres-insert-message",
+      "name": "Insert Chat Message",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [440, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $input.first().json;\nreturn [{\n  json: {\n    success: true,\n    messageId: row.message_id,\n    familyId: row.family_id,\n    senderId: row.sender_id,\n    messageText: row.message_text,\n    createdAt: row.created_at\n  }\n}];"
+      },
+      "id": "code-format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 201
+        }
+      },
+      "id": "response-chat-send",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Insert Chat Message", "type": "main", "index": 0 }]
+      ]
+    },
+    "Insert Chat Message": {
+      "main": [
+        [{ "node": "Format Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [{ "node": "Response", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

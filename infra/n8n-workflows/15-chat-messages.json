@@ -1,0 +1,83 @@
+{
+  "name": "FamilyTrack - Get Chat Messages",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "api/chat/messages",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-chat-messages",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "webhookId": "chat-messages-wh"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT m.message_id, m.sender_id, u.name as sender_name, m.message_text, m.is_read, m.created_at FROM chat_messages m JOIN users u ON m.sender_id = u.user_id WHERE m.family_id = {{ $json.familyId }} AND m.is_active = true ORDER BY m.created_at DESC LIMIT {{ $json.limit || 50 }}",
+        "options": {}
+      },
+      "id": "postgres-get-messages",
+      "name": "Get Chat Messages",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [440, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const messages = $input.all().map(item => {\n  const m = item.json;\n  return {\n    messageId: m.message_id,\n    senderId: m.sender_id,\n    senderName: m.sender_name,\n    messageText: m.message_text,\n    isRead: m.is_read,\n    createdAt: m.created_at\n  };\n});\n\nreturn [{ json: { success: true, messages: messages, count: messages.length } }];"
+      },
+      "id": "code-format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "response-chat-messages",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Get Chat Messages", "type": "main", "index": 0 }]
+      ]
+    },
+    "Get Chat Messages": {
+      "main": [
+        [{ "node": "Format Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [{ "node": "Response", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

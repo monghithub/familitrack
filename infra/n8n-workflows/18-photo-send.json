@@ -1,0 +1,83 @@
+{
+  "name": "FamilyTrack - Send Photo",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "api/photos/send",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-photo-send",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "webhookId": "photo-send-wh"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO photos (family_id, user_id, photo_url, caption, is_active) VALUES ({{ $json.familyId }}, {{ $json.userId }}, '{{ $json.photoUrl }}', '{{ $json.caption || '' }}', true) RETURNING photo_id, family_id, user_id, photo_url, caption, created_at",
+        "options": {}
+      },
+      "id": "postgres-insert-photo",
+      "name": "Insert Photo",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [440, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $input.first().json;\nreturn [{\n  json: {\n    success: true,\n    photoId: row.photo_id,\n    familyId: row.family_id,\n    userId: row.user_id,\n    photoUrl: row.photo_url,\n    caption: row.caption,\n    createdAt: row.created_at\n  }\n}];"
+      },
+      "id": "code-format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 201
+        }
+      },
+      "id": "response-photo-send",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Insert Photo", "type": "main", "index": 0 }]
+      ]
+    },
+    "Insert Photo": {
+      "main": [
+        [{ "node": "Format Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [{ "node": "Response", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

@@ -1,0 +1,83 @@
+{
+  "name": "FamilyTrack - Send Emergency Alert",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "api/emergency",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-emergency",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "webhookId": "emergency-wh"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO emergency_alerts (family_id, user_id, latitude, longitude, message, is_active) VALUES ({{ $json.familyId }}, {{ $json.userId }}, {{ $json.latitude }}, {{ $json.longitude }}, '{{ $json.message }}', true) RETURNING alert_id, family_id, user_id, latitude, longitude, message, created_at",
+        "options": {}
+      },
+      "id": "postgres-insert-emergency",
+      "name": "Insert Emergency Alert",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [440, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $input.first().json;\nreturn [{\n  json: {\n    success: true,\n    alertId: row.alert_id,\n    familyId: row.family_id,\n    userId: row.user_id,\n    latitude: parseFloat(row.latitude),\n    longitude: parseFloat(row.longitude),\n    message: row.message,\n    createdAt: row.created_at\n  }\n}];"
+      },
+      "id": "code-format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 201
+        }
+      },
+      "id": "response-emergency",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Insert Emergency Alert", "type": "main", "index": 0 }]
+      ]
+    },
+    "Insert Emergency Alert": {
+      "main": [
+        [{ "node": "Format Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [{ "node": "Response", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}
