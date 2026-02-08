@@ -30,7 +30,8 @@ data class SettingsUiState(
     val lastLocationUpdate: String = "Nunca",
     val actionMessage: String? = null,
     val isPinSet: Boolean = false,
-    val isBiometricEnabled: Boolean = false
+    val isBiometricEnabled: Boolean = false,
+    val darkMode: String = "system"
 )
 
 @HiltViewModel
@@ -104,6 +105,11 @@ class SettingsViewModel @Inject constructor(
                 _uiState.update { it.copy(lastLocationUpdate = formatted) }
             }
         }
+        viewModelScope.launch {
+            settingsRepository.darkMode.collect { mode ->
+                _uiState.update { it.copy(darkMode = mode) }
+            }
+        }
     }
 
     private fun loadSecuritySettings() {
@@ -156,6 +162,12 @@ class SettingsViewModel @Inject constructor(
     fun toggleNotifications(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setNotificationsEnabled(enabled)
+        }
+    }
+
+    fun setDarkMode(mode: String) {
+        viewModelScope.launch {
+            settingsRepository.setDarkMode(mode)
         }
     }
 

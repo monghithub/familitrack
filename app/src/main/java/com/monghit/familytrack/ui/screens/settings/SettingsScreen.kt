@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.Brightness6
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Info
@@ -109,6 +110,44 @@ fun SettingsScreen(
                     checked = uiState.notificationsEnabled,
                     onCheckedChange = viewModel::toggleNotifications
                 )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Appearance Section
+            SettingsSection(
+                title = "Apariencia",
+                icon = Icons.Default.Brightness6
+            ) {
+                Text(
+                    text = "Tema",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                val options = listOf("system" to "Sistema", "light" to "Claro", "dark" to "Oscuro")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+                ) {
+                    options.forEach { (value, label) ->
+                        val selected = uiState.darkMode == value
+                        if (selected) {
+                            Button(
+                                onClick = {},
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(label)
+                            }
+                        } else {
+                            OutlinedButton(
+                                onClick = { viewModel.setDarkMode(value) },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(label)
+                            }
+                        }
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
