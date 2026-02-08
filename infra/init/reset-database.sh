@@ -40,7 +40,8 @@ echo ""
 read -p "¿Deseas continuar? (sí/no): " -r
 echo ""
 
-if [[ ! $REPLY =~ ^[Ss][Íí]$ ]]; then
+# Aceptar múltiples variaciones: sí, si, yes, y (con/sin tilde, mayúsculas)
+if [[ ! $REPLY =~ ^([Ss]í?|[Yy]es?|[Yy])$ ]]; then
     echo -e "${YELLOW}Cancelado.${NC}"
     exit 0
 fi
