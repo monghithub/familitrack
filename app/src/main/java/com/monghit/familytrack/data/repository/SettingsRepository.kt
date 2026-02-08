@@ -37,6 +37,7 @@ class SettingsRepository @Inject constructor(
         val INVITE_CODE = stringPreferencesKey("invite_code")
         val USER_ROLE = stringPreferencesKey("user_role")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val DARK_MODE = stringPreferencesKey("dark_mode")
     }
 
     val isLocationEnabled: Flow<Boolean> = context.dataStore.data
@@ -112,6 +113,11 @@ class SettingsRepository @Inject constructor(
     val onboardingCompleted: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
             preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
+        }
+
+    val darkMode: Flow<String> = context.dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.DARK_MODE] ?: "system"
         }
 
     suspend fun setLocationEnabled(enabled: Boolean) {
@@ -201,6 +207,12 @@ class SettingsRepository @Inject constructor(
     suspend fun setOnboardingCompleted(completed: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.ONBOARDING_COMPLETED] = completed
+        }
+    }
+
+    suspend fun setDarkMode(mode: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DARK_MODE] = mode
         }
     }
 
