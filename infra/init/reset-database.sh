@@ -50,19 +50,28 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo -e "${YELLOW}[1/3]${NC} Borrando todas las tablas..."
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-# Detectar si estamos en Docker o si psql está disponible localmente
-if command -v psql &> /dev/null; then
-    PSQL_CMD="psql"
-    PSQL_HOST="-h $DB_HOST"
-elif command -v docker &> /dev/null && docker ps | grep -q familytrack-db; then
-    PSQL_CMD="docker exec familytrack-db psql"
-    PSQL_HOST=""
-else
-    echo -e "${RED}✗ No se encontró psql ni Docker con familytrack-db${NC}"
-    exit 1
-fi
+# Función para ejecutar SQL
+execute_sql() {
+    local sql_file="$1"
+    local step_name="$2"
 
-if $PSQL_CMD $PSQL_HOST -U "$DB_USER" -d "$DB_NAME" -f "$SCRIPT_DIR/00-reset-db.sql"; then
+    if command -v psql &> /dev/null; then
+        # Local: usar psql directamente
+        psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" < "$sql_file"
+    elif command -v docker &> /dev/null && docker ps | grep -q familytrack-db; then
+        # Docker: usar stdin con docker exec
+        cat "$sql_file" | docker exec -i familytrack-db psql -U "$DB_USER" -d "$DB_NAME"
+    else
+        echo -e "${RED}✗ No se encontró psql ni Docker con familytrack-db${NC}"
+        exit 1
+    fi
+}
+
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${YELLOW}[1/3]${NC} Borrando todas las tablas..."
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+if execute_sql "$SCRIPT_DIR/00-reset-db.sql" "reset"; then
     echo -e "${GREEN}✓ Tablas borradas exitosamente${NC}"
 else
     echo -e "${RED}✗ Error al borrar tablas${NC}"
@@ -74,7 +83,7 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo -e "${YELLOW}[2/3]${NC} Creando esquema v2.0..."
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-if $PSQL_CMD $PSQL_HOST -U "$DB_USER" -d "$DB_NAME" -f "$SCRIPT_DIR/01-schema-v2.sql"; then
+if execute_sql "$SCRIPT_DIR/01-schema-v2.sql" "schema"; then
     echo -e "${GREEN}✓ Esquema v2.0 creado exitosamente${NC}"
 else
     echo -e "${RED}✗ Error al crear esquema${NC}"
@@ -86,7 +95,7 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo -e "${YELLOW}[3/3]${NC} Insertando datos de ejemplo..."
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-if $PSQL_CMD $PSQL_HOST -U "$DB_USER" -d "$DB_NAME" -f "$SCRIPT_DIR/02-seed-v2.sql"; then
+if execute_sql "$SCRIPT_DIR/02-seed-v2.sql" "seed"; then
     echo -e "${GREEN}✓ Datos de ejemplo insertados exitosamente${NC}"
 else
     echo -e "${RED}✗ Error al insertar datos${NC}"
