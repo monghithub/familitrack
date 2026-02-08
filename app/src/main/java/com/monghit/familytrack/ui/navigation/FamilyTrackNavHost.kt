@@ -28,9 +28,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.monghit.familytrack.R
+import com.monghit.familytrack.data.repository.SecurityRepository
 import com.monghit.familytrack.data.repository.SettingsRepository
 import com.monghit.familytrack.ui.screens.family.FamilyScreen
 import com.monghit.familytrack.ui.screens.familysetup.FamilySetupScreen
+import com.monghit.familytrack.ui.screens.pin.PinScreen
 import com.monghit.familytrack.ui.screens.home.HomeScreen
 import com.monghit.familytrack.ui.screens.map.MapScreen
 import com.monghit.familytrack.ui.screens.safezones.SafeZonesScreen
@@ -78,13 +80,20 @@ private val screensWithBottomBar = setOf(
 )
 
 @Composable
-fun FamilyTrackNavHost(settingsRepository: SettingsRepository) {
+fun FamilyTrackNavHost(
+    settingsRepository: SettingsRepository,
+    securityRepository: SecurityRepository
+) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
     val familyId by settingsRepository.familyId.collectAsState(initial = 0)
 
-    val startDestination = if (familyId > 0) NavRoutes.Home.route else NavRoutes.FamilySetup.route
+    val startDestination = when {
+        familyId == 0 -> NavRoutes.FamilySetup.route
+        securityRepository.isPinSet() -> NavRoutes.PinLock.route
+        else -> NavRoutes.Home.route
+    }
     val showBottomBar = currentDestination?.route in screensWithBottomBar
 
     Scaffold(
@@ -123,6 +132,15 @@ fun FamilyTrackNavHost(settingsRepository: SettingsRepository) {
             startDestination = startDestination,
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable(NavRoutes.PinLock.route) {
+                PinScreen(
+                    onAuthenticated = {
+                        navController.navigate(NavRoutes.Home.route) {
+                            popUpTo(NavRoutes.PinLock.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
             composable(NavRoutes.FamilySetup.route) {
                 FamilySetupScreen(
                     onSetupComplete = {

@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.monghit.familytrack.data.repository.LocationRepository
+import com.monghit.familytrack.data.repository.SecurityRepository
 import com.monghit.familytrack.data.repository.SettingsRepository
 import com.monghit.familytrack.services.LocationForegroundService
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,14 +28,17 @@ data class SettingsUiState(
     val userId: Int = 0,
     val isRegistered: Boolean = false,
     val lastLocationUpdate: String = "Nunca",
-    val actionMessage: String? = null
+    val actionMessage: String? = null,
+    val isPinSet: Boolean = false,
+    val isBiometricEnabled: Boolean = false
 )
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val application: Application,
     private val settingsRepository: SettingsRepository,
-    private val locationRepository: LocationRepository
+    private val locationRepository: LocationRepository,
+    private val securityRepository: SecurityRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -42,6 +46,7 @@ class SettingsViewModel @Inject constructor(
 
     init {
         loadSettings()
+        loadSecuritySettings()
     }
 
     private fun loadSettings() {
@@ -99,6 +104,31 @@ class SettingsViewModel @Inject constructor(
                 _uiState.update { it.copy(lastLocationUpdate = formatted) }
             }
         }
+    }
+
+    private fun loadSecuritySettings() {
+        _uiState.update {
+            it.copy(
+                isPinSet = securityRepository.isPinSet(),
+                isBiometricEnabled = securityRepository.isBiometricEnabled()
+            )
+        }
+    }
+
+    fun togglePinEnabled(enabled: Boolean) {
+        if (!enabled) {
+            securityRepository.clearPin()
+            _uiState.update { it.copy(isPinSet = false, isBiometricEnabled = false) }
+        }
+    }
+
+    fun toggleBiometric(enabled: Boolean) {
+        securityRepository.setBiometricEnabled(enabled)
+        _uiState.update { it.copy(isBiometricEnabled = enabled) }
+    }
+
+    fun onPinCreated() {
+        _uiState.update { it.copy(isPinSet = true) }
     }
 
     fun toggleLocationEnabled(enabled: Boolean) {
