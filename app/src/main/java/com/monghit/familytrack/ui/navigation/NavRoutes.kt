@@ -13,4 +13,5 @@ sealed class NavRoutes(val route: String) {
     data object Chat : NavRoutes("chat")
     data object Splash : NavRoutes("splash")
     data object Onboarding : NavRoutes("onboarding")
+    data object Photos : NavRoutes("photos")
 }

@@ -40,6 +40,7 @@ import com.monghit.familytrack.ui.screens.map.MapScreen
 import com.monghit.familytrack.ui.screens.chat.ChatScreen
 import com.monghit.familytrack.ui.screens.onboarding.OnboardingScreen
 import com.monghit.familytrack.ui.screens.permissions.PermissionsScreen
+import com.monghit.familytrack.ui.screens.photos.PhotosScreen
 import com.monghit.familytrack.ui.screens.profile.ProfileScreen
 import com.monghit.familytrack.ui.screens.splash.SplashScreen
 import com.monghit.familytrack.ui.screens.safezones.SafeZonesScreen
@@ -225,6 +226,11 @@ fun FamilyTrackNavHost(
             }
             composable(NavRoutes.Permissions.route) {
                 PermissionsScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+            composable(NavRoutes.Photos.route) {
+                PhotosScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
