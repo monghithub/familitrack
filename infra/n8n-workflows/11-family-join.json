@@ -18,11 +18,11 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE users SET family_id = {{ $json.familyId }} WHERE user_id = {{ $json.userId }} RETURNING user_id, name, email, role, family_id",
+        "query": "SELECT family_id, name FROM families WHERE invite_code = '{{ $json.inviteCode }}' AND is_active = true",
         "options": {}
       },
-      "id": "postgres-update-user",
-      "name": "Update User Family",
+      "id": "postgres-get-family",
+      "name": "Get Family",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [440, 300],
@@ -35,36 +35,82 @@
     },
     {
       "parameters": {
-        "jsCode": "const row = $input.first().json;\nreturn [{\n  json: {\n    success: true,\n    userId: row.user_id,\n    name: row.name,\n    email: row.email,\n    role: row.role,\n    familyId: row.family_id\n  }\n}];"
+        "operation": "executeQuery",
+        "query": "INSERT INTO users (name, family_id, role) VALUES ('{{ $json.userName }}', {{ $node[\"Get Family\"].json.family_id }}, 'monitored') RETURNING user_id, name, role",
+        "options": {}
+      },
+      "id": "postgres-insert-user",
+      "name": "Insert User",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [660, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO user_families (user_id, family_id, role) VALUES ({{ $node[\"Insert User\"].json.user_id }}, {{ $node[\"Get Family\"].json.family_id }}, 'monitored')",
+        "options": {}
+      },
+      "id": "postgres-link-user-family",
+      "name": "Link User-Family",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [880, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const user = $node[\"Insert User\"].json;\nconst family = $node[\"Get Family\"].json;\nreturn [{\n  json: {\n    success: true,\n    userId: user.user_id,\n    familyId: family.family_id,\n    familyName: family.name,\n    role: user.role\n  }\n}];"
       },
       "id": "code-format-response",
       "name": "Format Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [660, 300]
+      "position": [1100, 300]
     },
     {
       "parameters": {
         "respondWith": "json",
         "responseBody": "={{ $json }}",
         "options": {
-          "responseCode": 200
+          "responseCode": 201
         }
       },
       "id": "response-family-join",
       "name": "Response",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [880, 300]
+      "position": [1320, 300]
     }
   ],
   "connections": {
     "Webhook": {
       "main": [
-        [{ "node": "Update User Family", "type": "main", "index": 0 }]
+        [{ "node": "Get Family", "type": "main", "index": 0 }]
       ]
     },
-    "Update User Family": {
+    "Get Family": {
+      "main": [
+        [{ "node": "Insert User", "type": "main", "index": 0 }]
+      ]
+    },
+    "Insert User": {
+      "main": [
+        [{ "node": "Link User-Family", "type": "main", "index": 0 }]
+      ]
+    },
+    "Link User-Family": {
       "main": [
         [{ "node": "Format Response", "type": "main", "index": 0 }]
       ]

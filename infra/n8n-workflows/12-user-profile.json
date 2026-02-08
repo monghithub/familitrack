@@ -18,7 +18,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT user_id, name, email, phone, profile_photo_url, role, family_id, is_active, created_at FROM users WHERE user_id = {{ $json.userId }}",
+        "query": "SELECT u.user_id, u.name, u.email, u.role, u.avatar_base64, f.name as family_name, f.invite_code FROM users u LEFT JOIN families f ON u.family_id = f.family_id WHERE u.user_id = {{ $json.userId }}",
         "options": {}
       },
       "id": "postgres-get-profile",
@@ -35,7 +35,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const row = $input.first().json;\nreturn [{\n  json: {\n    success: true,\n    userId: row.user_id,\n    name: row.name,\n    email: row.email,\n    phone: row.phone,\n    profilePhotoUrl: row.profile_photo_url,\n    role: row.role,\n    familyId: row.family_id,\n    isActive: row.is_active,\n    createdAt: row.created_at\n  }\n}];"
+        "jsCode": "const row = $input.first().json;\nreturn [{\n  json: {\n    success: true,\n    userId: row.user_id,\n    name: row.name,\n    email: row.email,\n    avatar: row.avatar_base64,\n    role: row.role,\n    familyName: row.family_name,\n    inviteCode: row.invite_code\n  }\n}];"
       },
       "id": "code-format-response",
       "name": "Format Response",

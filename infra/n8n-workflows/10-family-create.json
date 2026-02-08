@@ -17,15 +17,25 @@
     },
     {
       "parameters": {
+        "jsCode": "const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';\nlet code = '';\nfor (let i = 0; i < 6; i++) {\n  code += chars.charAt(Math.floor(Math.random() * chars.length));\n}\nreturn [{ json: { ...($input.first().json), inviteCode: code } }];"
+      },
+      "id": "code-generate-invite",
+      "name": "Generate Invite Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO families (family_name, admin_user_id, is_active) VALUES ('{{ $json.familyName }}', {{ $json.adminUserId }}, true) RETURNING family_id, family_name, admin_user_id, created_at",
+        "query": "INSERT INTO families (name, invite_code, is_active) VALUES ('{{ $json.familyName }}', '{{ $json.inviteCode }}', true) RETURNING family_id, name, invite_code",
         "options": {}
       },
       "id": "postgres-insert-family",
       "name": "Insert Family",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
-      "position": [440, 300],
+      "position": [660, 300],
       "credentials": {
         "postgres": {
           "id": "tUhgoGHD50ho6lDG",
@@ -35,13 +45,49 @@
     },
     {
       "parameters": {
-        "jsCode": "const row = $input.first().json;\nreturn [{\n  json: {\n    success: true,\n    familyId: row.family_id,\n    familyName: row.family_name,\n    adminUserId: row.admin_user_id,\n    createdAt: row.created_at\n  }\n}];"
+        "operation": "executeQuery",
+        "query": "INSERT INTO users (name, family_id, role) VALUES ('{{ $json.userName }}', {{ $node[\"Insert Family\"].json.family_id }}, 'admin') RETURNING user_id, name, role",
+        "options": {}
+      },
+      "id": "postgres-insert-user",
+      "name": "Insert User",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [880, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO user_families (user_id, family_id, role) VALUES ({{ $node[\"Insert User\"].json.user_id }}, {{ $node[\"Insert Family\"].json.family_id }}, 'admin')",
+        "options": {}
+      },
+      "id": "postgres-link-user-family",
+      "name": "Link User-Family",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1100, 300],
+      "credentials": {
+        "postgres": {
+          "id": "tUhgoGHD50ho6lDG",
+          "name": "FamilyTrack PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const user = $node[\"Insert User\"].json;\nconst family = $node[\"Insert Family\"].json;\nreturn [{\n  json: {\n    success: true,\n    userId: user.user_id,\n    familyId: family.family_id,\n    familyName: family.name,\n    inviteCode: family.invite_code,\n    role: user.role\n  }\n}];"
       },
       "id": "code-format-response",
       "name": "Format Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [660, 300]
+      "position": [1320, 300]
     },
     {
       "parameters": {
@@ -55,16 +101,31 @@
       "name": "Response",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [880, 300]
+      "position": [1540, 300]
     }
   ],
   "connections": {
     "Webhook": {
       "main": [
+        [{ "node": "Generate Invite Code", "type": "main", "index": 0 }]
+      ]
+    },
+    "Generate Invite Code": {
+      "main": [
         [{ "node": "Insert Family", "type": "main", "index": 0 }]
       ]
     },
     "Insert Family": {
+      "main": [
+        [{ "node": "Insert User", "type": "main", "index": 0 }]
+      ]
+    },
+    "Insert User": {
+      "main": [
+        [{ "node": "Link User-Family", "type": "main", "index": 0 }]
+      ]
+    },
+    "Link User-Family": {
       "main": [
         [{ "node": "Format Response", "type": "main", "index": 0 }]
       ]

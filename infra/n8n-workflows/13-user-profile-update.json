@@ -18,7 +18,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE users SET name = COALESCE('{{ $json.name }}', name), email = COALESCE('{{ $json.email }}', email), phone = COALESCE('{{ $json.phone }}', phone), profile_photo_url = COALESCE('{{ $json.profilePhotoUrl }}', profile_photo_url), updated_at = NOW() WHERE user_id = {{ $json.userId }} RETURNING user_id, name, email, phone, profile_photo_url, role, family_id",
+        "query": "UPDATE users SET name = COALESCE('{{ $json.name }}', name), avatar_base64 = COALESCE('{{ $json.avatar }}', avatar_base64), updated_at = NOW() WHERE user_id = {{ $json.userId }} RETURNING user_id, name, avatar_base64, role",
         "options": {}
       },
       "id": "postgres-update-profile",
@@ -35,7 +35,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const row = $input.first().json;\nreturn [{\n  json: {\n    success: true,\n    userId: row.user_id,\n    name: row.name,\n    email: row.email,\n    phone: row.phone,\n    profilePhotoUrl: row.profile_photo_url,\n    role: row.role,\n    familyId: row.family_id\n  }\n}];"
+        "jsCode": "const row = $input.first().json;\nreturn [{\n  json: {\n    success: true,\n    userId: row.user_id,\n    name: row.name,\n    avatar: row.avatar_base64,\n    role: row.role\n  }\n}];"
       },
       "id": "code-format-response",
       "name": "Format Response",
