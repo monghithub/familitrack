@@ -14,4 +14,5 @@ sealed class NavRoutes(val route: String) {
     data object Splash : NavRoutes("splash")
     data object Onboarding : NavRoutes("onboarding")
     data object Photos : NavRoutes("photos")
+    data object RouteHistory : NavRoutes("route_history")
 }
