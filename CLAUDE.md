@@ -194,6 +194,35 @@ app/src/main/java/com/monghit/familytrack/
     └── theme/                     # Material 3 theme
 ```
 
+## Herramientas Locales
+
+### ADB (Android Debug Bridge)
+- **Ruta**: `~/Android/Sdk/platform-tools/adb`
+- **Alias recomendado**: `alias adb="~/Android/Sdk/platform-tools/adb"`
+
+### Comandos ADB Comunes
+```bash
+# Desinstalar app
+~/Android/Sdk/platform-tools/adb uninstall com.monghit.familytrack.debug
+
+# Instalar APK
+~/Android/Sdk/platform-tools/adb install ~/Git/personal/monghithub/apk_android/familytrack/app/build/outputs/apk/debug/app-debug.apk
+
+# Ver logs (logcat)
+~/Android/Sdk/platform-tools/adb logcat | grep familytrack
+
+# Shell interactivo
+~/Android/Sdk/platform-tools/adb shell
+```
+
+### Gradle Build
+```bash
+# Compilar y generar APK
+cd ~/Git/personal/monghithub/apk_android/familytrack
+./gradlew assembleDebug
+# APK generado en: app/build/outputs/apk/debug/app-debug.apk
+```
+
 ## Troubleshooting
 
 ### Gradle: BuildConfig cacheado tras cambiar BASE_URL
