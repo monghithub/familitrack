@@ -32,6 +32,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
+import androidx.compose.ui.res.stringResource
+import com.monghit.familytrack.R
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -56,10 +58,10 @@ fun RouteHistoryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Historial de rutas") },
+                title = { Text(stringResource(R.string.route_history_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 }
             )
@@ -83,7 +85,7 @@ fun RouteHistoryScreen(
                     cal.add(Calendar.DAY_OF_MONTH, -1)
                     viewModel.selectDate(dateFormat.format(cal.time))
                 }) {
-                    Icon(Icons.Filled.ChevronLeft, contentDescription = "Dia anterior")
+                    Icon(Icons.Filled.ChevronLeft, contentDescription = stringResource(R.string.route_history_prev_day))
                 }
                 Text(
                     text = displayDate,
@@ -99,7 +101,7 @@ fun RouteHistoryScreen(
                         viewModel.selectDate(dateFormat.format(cal.time))
                     }
                 }) {
-                    Icon(Icons.Filled.ChevronRight, contentDescription = "Dia siguiente")
+                    Icon(Icons.Filled.ChevronRight, contentDescription = stringResource(R.string.route_history_next_day))
                 }
             }
 
@@ -120,7 +122,7 @@ fun RouteHistoryScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "No hay datos de ruta para este dia",
+                        stringResource(R.string.route_history_empty),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -132,7 +134,7 @@ fun RouteHistoryScreen(
                 }
 
                 Text(
-                    text = "${uiState.points.size} puntos registrados",
+                    text = stringResource(R.string.route_history_points, uiState.points.size),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 16.dp)

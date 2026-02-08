@@ -116,15 +116,19 @@ fun SettingsScreen(
 
             // Appearance Section
             SettingsSection(
-                title = "Apariencia",
+                title = stringResource(R.string.settings_appearance),
                 icon = Icons.Default.Brightness6
             ) {
                 Text(
-                    text = "Tema",
+                    text = stringResource(R.string.settings_theme),
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
-                val options = listOf("system" to "Sistema", "light" to "Claro", "dark" to "Oscuro")
+                val options = listOf(
+                    "system" to stringResource(R.string.settings_theme_system),
+                    "light" to stringResource(R.string.settings_theme_light),
+                    "dark" to stringResource(R.string.settings_theme_dark)
+                )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
@@ -154,11 +158,11 @@ fun SettingsScreen(
 
             // Security Section
             SettingsSection(
-                title = "Seguridad",
+                title = stringResource(R.string.settings_security),
                 icon = Icons.Default.Lock
             ) {
                 SettingsSwitchItem(
-                    title = "Bloqueo con PIN",
+                    title = stringResource(R.string.settings_pin_lock),
                     checked = uiState.isPinSet,
                     onCheckedChange = { enabled ->
                         if (!enabled) {
@@ -170,7 +174,7 @@ fun SettingsScreen(
                 if (uiState.isPinSet) {
                     HorizontalDivider()
                     SettingsSwitchItem(
-                        title = "Desbloqueo biométrico",
+                        title = stringResource(R.string.settings_biometric),
                         checked = uiState.isBiometricEnabled,
                         onCheckedChange = viewModel::toggleBiometric
                     )
@@ -185,7 +189,7 @@ fun SettingsScreen(
                         onClick = onNavigateToPermissions,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Gestionar permisos")
+                        Text(stringResource(R.string.settings_manage_permissions))
                     }
                 }
             }
@@ -222,7 +226,7 @@ fun SettingsScreen(
                             contentDescription = null,
                             modifier = Modifier.padding(end = 4.dp)
                         )
-                        Text("Editar perfil")
+                        Text(stringResource(R.string.settings_edit_profile))
                     }
                     OutlinedButton(
                         onClick = onNavigateToChat,
@@ -233,7 +237,7 @@ fun SettingsScreen(
                             contentDescription = null,
                             modifier = Modifier.padding(end = 4.dp)
                         )
-                        Text("Chat familiar")
+                        Text(stringResource(R.string.settings_family_chat))
                     }
                 }
             }
@@ -256,7 +260,7 @@ fun SettingsScreen(
                 )
                 HorizontalDivider()
                 SettingsTextItem(
-                    title = stringResource(R.string.settings_registered, if (uiState.isRegistered) "S\u00ed" else "No"),
+                    title = stringResource(R.string.settings_registered, if (uiState.isRegistered) stringResource(R.string.settings_yes) else stringResource(R.string.settings_no)),
                     value = ""
                 )
                 HorizontalDivider()

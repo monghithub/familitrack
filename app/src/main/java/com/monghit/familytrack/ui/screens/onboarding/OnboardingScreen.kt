@@ -31,9 +31,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.monghit.familytrack.R
 
 private data class OnboardingPage(
     val icon: ImageVector,
@@ -41,29 +43,29 @@ private data class OnboardingPage(
     val description: String
 )
 
-private val pages = listOf(
-    OnboardingPage(
-        icon = Icons.Filled.FamilyRestroom,
-        title = "Tu familia conectada",
-        description = "Crea o unete a un grupo familiar para compartir la ubicacion en tiempo real con tus seres queridos."
-    ),
-    OnboardingPage(
-        icon = Icons.Filled.LocationOn,
-        title = "Ubicacion en tiempo real",
-        description = "Ve donde estan tus familiares en el mapa, configura zonas seguras y recibe alertas."
-    ),
-    OnboardingPage(
-        icon = Icons.Filled.Shield,
-        title = "Seguridad y privacidad",
-        description = "Tu informacion esta protegida. Controla quien puede ver tu ubicacion y cuando compartes."
-    )
-)
-
 @Composable
 fun OnboardingScreen(
     onOnboardingComplete: () -> Unit
 ) {
     var currentPage by remember { mutableIntStateOf(0) }
+
+    val pages = listOf(
+        OnboardingPage(
+            icon = Icons.Filled.FamilyRestroom,
+            title = stringResource(R.string.onboarding_title_1),
+            description = stringResource(R.string.onboarding_desc_1)
+        ),
+        OnboardingPage(
+            icon = Icons.Filled.LocationOn,
+            title = stringResource(R.string.onboarding_title_2),
+            description = stringResource(R.string.onboarding_desc_2)
+        ),
+        OnboardingPage(
+            icon = Icons.Filled.Shield,
+            title = stringResource(R.string.onboarding_title_3),
+            description = stringResource(R.string.onboarding_desc_3)
+        )
+    )
 
     Column(
         modifier = Modifier
@@ -78,7 +80,7 @@ fun OnboardingScreen(
         ) {
             if (currentPage < pages.size - 1) {
                 TextButton(onClick = onOnboardingComplete) {
-                    Text("Saltar")
+                    Text(stringResource(R.string.onboarding_skip))
                 }
             }
         }
@@ -149,7 +151,7 @@ fun OnboardingScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = if (currentPage < pages.size - 1) "Siguiente" else "Comenzar"
+                text = if (currentPage < pages.size - 1) stringResource(R.string.onboarding_next) else stringResource(R.string.onboarding_start)
             )
         }
     }
